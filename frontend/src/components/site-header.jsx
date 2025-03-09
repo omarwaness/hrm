@@ -39,6 +39,11 @@ export function SiteHeader() {
     }
   }, [])
 
+  const navigateToDashboard = () => {
+    // Navigate to dashboard page
+    window.location.href = "/dashboard";
+  };
+
   return (
     <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b">
       <div className="flex h-16 w-full items-center gap-2 px-4">
@@ -62,7 +67,9 @@ export function SiteHeader() {
 
           {/* Navigation Buttons - Shown on Desktop */}
           <div className="hidden md:flex items-center gap-1">
-            <Button variant="ghost" size="sm">Dashboard</Button>
+            <Button variant="ghost" size="sm" onClick={navigateToDashboard}>
+              Dashboard
+            </Button>
             <Button variant="ghost" size="sm">Schedule</Button>
             <Button variant="ghost" size="sm">Account</Button>
           </div>
@@ -77,7 +84,9 @@ export function SiteHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setIsNavOpen(false)}>Dashboard</DropdownMenuItem>
+              <DropdownMenuItem onClick={navigateToDashboard}>
+                Dashboard
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsNavOpen(false)}>Schedule</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsNavOpen(false)}>Account</DropdownMenuItem>
             </DropdownMenuContent>
