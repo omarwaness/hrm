@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import Page from "./pages/page"
-import LoginPage from "./pages/login"
+import Login from "./pages/login"
 import Jobs from "./pages/jobs"
 import Employee from "./pages/employee"
 import Dashboard from "./pages/dashboard"
