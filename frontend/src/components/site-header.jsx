@@ -14,33 +14,65 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
+// Theme management utility functions
+const getSystemTheme = () => {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+};
+
+const getInitialTheme = () => {
+  // Check if theme is stored in localStorage
+  const storedTheme = localStorage.getItem("theme");
+  if (storedTheme) return storedTheme;
+  
+  // Fall back to system preference
+  return getSystemTheme();
+};
+
+const applyTheme = (theme) => {
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+  localStorage.setItem("theme", theme);
+};
+
 export function SiteHeader() {
   const sidebarContext = useSidebar()
   const { toggleSidebar } = sidebarContext
-  const [isDarkMode, setIsDarkMode] = useState(
-    typeof window !== "undefined" ? document.documentElement.classList.contains("dark") : false
-  )
+  const [theme, setTheme] = useState("light"); // Default to light, will be updated in useEffect
   const [isNavOpen, setIsNavOpen] = useState(false)
 
+  // Initialize theme on component mount
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark")
-      localStorage.setItem("theme", "dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-      localStorage.setItem("theme", "light")
-    }
-  }, [isDarkMode])
+    const initialTheme = getInitialTheme();
+    setTheme(initialTheme);
+    applyTheme(initialTheme);
+    
+    // Optional: Listen for system theme changes
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e) => {
+      const newTheme = e.matches ? "dark" : "light";
+      // Only update if user hasn't explicitly set a preference
+      if (!localStorage.getItem("theme")) {
+        setTheme(newTheme);
+        applyTheme(newTheme);
+      }
+    };
+    
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme")
-    if (savedTheme === "dark") {
-      setIsDarkMode(true)
-    }
-  }, [])
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    applyTheme(newTheme);
+  };
 
   const navigateToDashboard = () => {
-    // Navigate to dashboard page
+    // Theme is already saved in localStorage by the toggleTheme function
+    // Just navigate to the dashboard
     window.location.href = "/dashboard";
   };
 
@@ -95,8 +127,8 @@ export function SiteHeader() {
 
         {/* Right side - Theme toggle and Profile */}
         <div className="ml-auto flex items-center gap-2">
-          <Button className="h-8 w-8" variant="ghost" size="icon" onClick={() => setIsDarkMode((prev) => !prev)}>
-            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          <Button className="h-8 w-8" variant="ghost" size="icon" onClick={toggleTheme}>
+            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
 
           {/* Profile Avatar with Dropdown */}
