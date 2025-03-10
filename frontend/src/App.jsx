@@ -6,7 +6,7 @@ import Employee from "./pages/employee"
 import Dashboard from "./pages/dashboard"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 
-// App component is the main component that renders the routes
+// This is the main component that renders the entire application
 function App() {
   return (
     <Router>
