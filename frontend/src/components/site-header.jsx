@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +44,25 @@ export function SiteHeader() {
   const { toggleSidebar } = sidebarContext
   const [theme, setTheme] = useState("light"); // Default to light, will be updated in useEffect
   const [isNavOpen, setIsNavOpen] = useState(false)
+  const navigate=useNavigate();
+  const handleLogOut=async(e)=>{
+  try{
+    const res=await fetch("http://localhost:5000/api/auth/logout",{
+      method:"POST",
+    })
+    
+    let data=await res.json();
+    
+    if(res.ok){
+      
+      localStorage.setItem("token", data.token);
+      navigate("/");
+      
+    }else{alert(data.message)}
+  }catch(err){
+    console.error("Error in login is:",err);
+    alert("error is:"+err)
+  }}
 
   // Initialize theme on component mount
   useEffect(() => {
@@ -150,7 +170,7 @@ export function SiteHeader() {
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
+                <span onClick={handleLogOut}>Logout</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

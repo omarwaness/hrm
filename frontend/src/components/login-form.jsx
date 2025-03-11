@@ -1,3 +1,5 @@
+import {useState} from 'react'
+import {useNavigate} from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,11 +11,37 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import React from "react"
 
 export function LoginForm({
   className,
   ...props
 }) {
+  const [email,setEmail]=useState("");
+      const [password,setPassword]=useState("");
+      const navigate=useNavigate();
+      const [action, setAction] =useState(null);
+      const handelSubmit=async(e)=>{
+        e.preventDefault(); 
+        setAction("reset");
+        try{
+          const res=await fetch("http://localhost:5000/api/auth/login",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({email,password}),
+            credentials:"include",
+          });
+          
+          const data=await res.json();
+          if(res.ok){
+            localStorage.setItem("token", data.token);
+            navigate("/");
+          }else{alert(data.message);}
+        }catch(error){
+          console.error("Error in login is:",error);
+          alert("error is:"+error)
+        }
+      }
   return (
     (<div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -24,7 +52,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handelSubmit} onReset={()=>setAction("reset")}>
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
                 <Button variant="outline" className="w-full">
@@ -45,7 +73,7 @@ export function LoginForm({
               <div className="grid gap-6">
                 <div className="grid gap-3">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="m@example.com" required />
+                  <Input id="email" type="email" placeholder="m@example.com"  value={email} onChange={(e)=>setEmail(e.target.value)} required />
                 </div>
                 <div className="grid gap-3">
                   <div className="flex items-center">
@@ -54,7 +82,7 @@ export function LoginForm({
                       Forgot your password?
                     </a>
                   </div>
-                  <Input id="password" type="password" required />
+                  <Input id="password" type="password"  value={password} onChange={(e)=>setPassword(e.target.value)} required />
                 </div>
                 <Button type="submit" className="w-full">
                   Login
