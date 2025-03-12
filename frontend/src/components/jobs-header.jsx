@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
 import { useEffect, useState } from "react";
-
+const navigateToLogin= ()=>{
+  window.location.href="/login"
+}
 
 
 export function JobsHeader() {
@@ -42,7 +44,7 @@ export function JobsHeader() {
           onClick={() => setIsDarkMode((prev) => !prev)}>
           {isDarkMode ? <Sun /> : <Moon />}
         </Button>
-        <Button className="h-8" variant="default">Login</Button>
+        <Button className="h-8" onClick={navigateToLogin} variant="default">Login</Button>
       </div>
     </header>)
   );

@@ -5,10 +5,11 @@ import Jobs from "./pages/jobs"
 import Employee from "./pages/employee"
 import Dashboard from "./pages/dashboard"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-
+import CreateAccount from "./pages/createAccount"
 // App component is the main component that renders the routes
 function App() {
   return (
+  
     <Router>
       <Routes>
         <Route path="/" element={<Page />} />
@@ -16,6 +17,7 @@ function App() {
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/createAccount" element={< CreateAccount/>} />
       </Routes>
     </Router>
   )
