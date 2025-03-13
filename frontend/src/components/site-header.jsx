@@ -56,7 +56,7 @@ export function SiteHeader() {
     if(res.ok){
       
       localStorage.setItem("token", data.token);
-      navigate("/");
+      navigate("/login");
       
     }else{alert(data.message)}
   }catch(err){
@@ -123,7 +123,7 @@ export function SiteHeader() {
             <Button variant="ghost" size="sm" onClick={navigateToDashboard}>
               Dashboard
             </Button>
-            <Button variant="ghost" size="sm">Schedule</Button>
+            
             <Button variant="ghost" size="sm">Account</Button>
           </div>
         </div>
