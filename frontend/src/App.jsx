@@ -7,7 +7,7 @@ import Dashboard from "./pages/dashboard"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import ForgotPassword from "./components/forgot-password-page"
 
-// App component is the main component that renders the routes
+// This is new
 function App() {
   return (
     <Router>

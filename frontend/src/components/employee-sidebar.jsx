@@ -6,6 +6,9 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
 } from "@/components/ui/sidebar"
 
 export function EmployeeSidebar({ setActiveComponent, ...props }) {
