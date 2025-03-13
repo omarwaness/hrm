@@ -5,6 +5,7 @@ import Jobs from "./pages/jobs"
 import Employee from "./pages/employee"
 import Dashboard from "./pages/dashboard"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import ForgotPassword from "./components/forgot-password-page"
 
 // App component is the main component that renders the routes
 function App() {
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Page />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password-page" element={<ForgotPassword />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/dashboard" element={<Dashboard />} />
