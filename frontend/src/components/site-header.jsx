@@ -1,6 +1,6 @@
 "use client"
 
-import { AlignJustify, Sun, Moon, LogOut, User, ChevronDown } from "lucide-react"
+import { AlignJustify, Sun, Moon, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
@@ -15,21 +15,18 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-// Theme management utility functions
-// New commit
+// Get system theme preference (light or dark)
 const getSystemTheme = () => {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 };
 
+// Retrieve the saved theme from localStorage or fall back to system theme
 const getInitialTheme = () => {
-  // Check if theme is stored in localStorage
   const storedTheme = localStorage.getItem("theme");
-  if (storedTheme) return storedTheme;
-  
-  // Fall back to system preference
-  return getSystemTheme();
+  return storedTheme || getSystemTheme();
 };
 
+// Apply theme by toggling the "dark" class on document root
 const applyTheme = (theme) => {
   if (theme === "dark") {
     document.documentElement.classList.add("dark");
@@ -39,120 +36,83 @@ const applyTheme = (theme) => {
   localStorage.setItem("theme", theme);
 };
 
-export function SiteHeader() {
-  const sidebarContext = useSidebar()
-  const { toggleSidebar } = sidebarContext
-  const [theme, setTheme] = useState("light"); // Default to light, will be updated in useEffect
-  const [isNavOpen, setIsNavOpen] = useState(false)
-  const navigate=useNavigate();
-  const handleLogOut=async(e)=>{
-  try{
-    const res=await fetch("http://localhost:5000/api/auth/logout",{
-      method:"POST",
-    })
-    
-    let data=await res.json();
-    
-    if(res.ok){
-      
-      localStorage.setItem("token", data.token);
-      navigate("/login");
-      
-    }else{alert(data.message)}
-  }catch(err){
-    console.error("Error in login is:",err);
-    alert("error is:"+err)
-  }}
+export function SiteHeader({ setActiveComponent }) {
+  const { toggleSidebar } = useSidebar();
+  const [theme, setTheme] = useState("light");
+  const navigate = useNavigate();
 
-  // Initialize theme on component mount
   useEffect(() => {
+    // Initialize theme when the component mounts
     const initialTheme = getInitialTheme();
     setTheme(initialTheme);
     applyTheme(initialTheme);
-    
-    // Optional: Listen for system theme changes
+
+    // Listen for system theme changes
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (e) => {
       const newTheme = e.matches ? "dark" : "light";
-      // Only update if user hasn't explicitly set a preference
       if (!localStorage.getItem("theme")) {
         setTheme(newTheme);
         applyTheme(newTheme);
       }
     };
-    
+
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  // Toggle between light and dark theme
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
     applyTheme(newTheme);
   };
 
-  const navigateToDashboard = () => {
-    // Theme is already saved in localStorage by the toggleTheme function
-    // Just navigate to the dashboard
-    window.location.href = "/dashboard";
+  // Handle user logout
+  const handleLogOut = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/logout", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        navigate("/login");
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.error("Error in logout:", err);
+      alert("Error: " + err);
+    }
   };
 
   return (
     <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b">
       <div className="flex h-16 w-full items-center gap-2 px-4">
-        {/* Left side - Menu toggle, Logo and Navigation */}
-        <div className="flex items-center gap-2">
-          {toggleSidebar && (
-            <>
-              <Button className="h-8 w-8" variant="ghost" size="icon" onClick={toggleSidebar}>
-                <AlignJustify className="!w-6 !h-6" strokeWidth={1.5} />
-              </Button>
-              <Separator orientation="vertical" className="mr-2 h-6" />
-            </>
-          )}
-
-          {/* Logo */}
-          <div className="mr-4 flex items-center">
-            <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-bold">
-              JN
-            </div>
-          </div>
-
-          {/* Navigation Buttons - Shown on Desktop */}
-          <div className="hidden md:flex items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={navigateToDashboard}>
-              Dashboard
+        {toggleSidebar && (
+          <>
+            <Button className="h-8 w-8" variant="ghost" size="icon" onClick={toggleSidebar}>
+              <AlignJustify className="!w-6 !h-6" strokeWidth={1.5} />
             </Button>
-            
-            <Button variant="ghost" size="sm">Account</Button>
+            <Separator orientation="vertical" className="mr-2 h-6" />
+          </>
+        )}
+
+        <div className="mr-4 flex items-center">
+          <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-bold">
+            JN
           </div>
         </div>
 
-        {/* Mobile Navigation Dropdown */}
-        <div className="md:hidden ml-auto">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <ChevronDown className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={navigateToDashboard}>
-                Dashboard
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsNavOpen(false)}>Schedule</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsNavOpen(false)}>Account</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="hidden md:flex items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Dashboard")}>Dashboard</Button>
+          <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Account")}>Account</Button>
         </div>
 
-        {/* Right side - Theme toggle and Profile */}
         <div className="ml-auto flex items-center gap-2">
           <Button className="h-8 w-8" variant="ghost" size="icon" onClick={toggleTheme}>
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
 
-          {/* Profile Avatar with Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
@@ -165,17 +125,17 @@ export function SiteHeader() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
-                <span>Account</span>
+                Account
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogOut}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span onClick={handleLogOut}>Logout</span>
+                Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
     </header>
-  )
+  );
 }

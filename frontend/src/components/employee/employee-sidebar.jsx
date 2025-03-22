@@ -1,6 +1,6 @@
 import * as React from "react"
 import { FileText, Calendar, LogOut, Settings } from "lucide-react"
-import { Button } from "./ui/button"
+import { Button } from "../ui/button"
 import {
   Sidebar,
   SidebarContent,

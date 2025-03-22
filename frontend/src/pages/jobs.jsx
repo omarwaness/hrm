@@ -1,5 +1,5 @@
-import JobBoard from "@/components/job-board"
-import { JobsHeader } from "@/components/jobs-header"
+import JobBoard from "@/components/jobs/job-board"
+import { JobsHeader } from "@/components/jobs/jobs-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 export default function Jobs() {

@@ -1,5 +1,5 @@
 import React from "react"
-import JobOfferCard from "./job-offer-card"
+import JobOfferCard from "./jobs/job-offer-card"
 
 export default function JobOfferList() {
   const jobOffers = [

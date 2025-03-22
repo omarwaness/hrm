@@ -1,9 +1,5 @@
-import { SiteHeader } from "@/components/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { EmployeeSidebar } from "@/components/employee-sidebar"
+import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { 
   Building2, 
@@ -17,7 +13,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export default function Dashboard() {
+function Dashboard() {
+
   // Mock data for company announcements
   const announcements = [
     {
@@ -60,13 +57,8 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="[--header-height:calc(theme(spacing.14))]">
-      <SidebarProvider className="flex flex-col">
-        <SiteHeader />
-        <div className="flex flex-1">
-          <EmployeeSidebar />
-          <SidebarInset>
-            <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="flex flex-1">
+      <div className="flex flex-1 flex-col gap-6 p-6">
               {/* Dashboard Header */}
               <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold tracking-tight">Company Dashboard</h1>
@@ -209,9 +201,8 @@ export default function Dashboard() {
                 </Card>
               </div>
             </div>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
     </div>
   )
-} 
+}
+
+export default Dashboard

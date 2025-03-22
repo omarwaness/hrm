@@ -1,34 +1,40 @@
 import * as React from "react";
-import { EmployeeSidebar } from "@/components/employee-sidebar";
+import { EmployeeSidebar } from "@/components/employee/employee-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import Contract from "@/components/contract";
-import LeaveRequest from "@/components/leave-request";
-import Resignation from "@/components/resignation";
+import Contract from "@/components/employee/contract";
+import LeaveRequest from "@/components/employee/leave-request";
+import Resignation from "@/components/employee/resignation";
+import Account from "@/components/Account";
+import Dashboard from "@/components/dashboard";
 
 // Importing the components for each section
 
 export default function Employee() {
-  const [activeComponent, setActiveComponent] = React.useState("Contract");
+  const [activeComponent, setActiveComponent] = React.useState("Dashboard");
 
   // Function to render the active component
   const renderComponent = () => {
     switch (activeComponent) {
+      case "Dashboard":
+        return <Dashboard/>;
       case "Contract":
-        return <Contract/>;
+        return <Contract />;
       case "LeaveRequest":
-        return <LeaveRequest/>;
+        return <LeaveRequest />;
       case "ResignationForm":
-        return <Resignation/>;
+        return <Resignation />;
+      case "Account":
+        return <Account/>;
       default:
-        return <Contract/>;
+        return <Dashboard/>;
     }
   };
 
   return (
     <div className="[--header-height:calc(theme(spacing.14))]">
       <SidebarProvider className="flex flex-col">
-        <SiteHeader />
+        <SiteHeader setActiveComponent={setActiveComponent} />
         <div className="flex flex-1">
           <EmployeeSidebar setActiveComponent={setActiveComponent} />
           <SidebarInset>
