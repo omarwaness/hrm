@@ -7,6 +7,7 @@ import LeaveRequest from "@/components/employee/leave-request";
 import Resignation from "@/components/employee/resignation";
 import Account from "@/components/Account";
 import Dashboard from "@/components/dashboard";
+import Inbox from "@/components/inbox";
 
 // Importing the components for each section
 
@@ -18,6 +19,8 @@ export default function Employee() {
     switch (activeComponent) {
       case "Dashboard":
         return <Dashboard/>;
+      case "Inbox":
+        return <Inbox/>;
       case "Contract":
         return <Contract />;
       case "LeaveRequest":

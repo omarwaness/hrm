@@ -5,6 +5,7 @@ import Employee from "./pages/employee"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import CreateAccount from "./pages/createAccount"
 import ForgotPassword from "./components/forgot-password-page"
+import Settings from "./pages/settings"
 
 
 // This is new
@@ -18,6 +19,7 @@ function App() {
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/createAccount" element={< CreateAccount/>} />
+        <Route path="/settings" element={<Settings/>} />
       </Routes>
     </Router>
   )
