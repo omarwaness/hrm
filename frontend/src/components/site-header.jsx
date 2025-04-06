@@ -104,6 +104,9 @@ export function SiteHeader() {
               Dashboard
             </Button>
             <Button variant="ghost" size="sm">Schedule</Button>
+            <Button variant="ghost" size="sm" onClick={() => window.location.href = "/inbox"}>
+              Inbox
+            </Button>
             <Button variant="ghost" size="sm">Account</Button>
           </div>
         </div>
@@ -121,6 +124,7 @@ export function SiteHeader() {
                 Dashboard
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsNavOpen(false)}>Schedule</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => window.location.href = "/inbox"}>Inbox</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsNavOpen(false)}>Account</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
