@@ -37,7 +37,7 @@ export function LoginForm({
           const data=await res.json();
           if(res.ok){
             localStorage.setItem("token", data.token);
-            navigate("/");
+            navigate("/employee");
           }else{alert(data.message);}
         }catch(error){
           console.error("Error in login is:",error);
