@@ -105,6 +105,8 @@ export function SiteHeader({ setActiveComponent }) {
 
         <div className="hidden md:flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Dashboard")}>Dashboard</Button>
+          <Button variant="ghost" size="sm" onClick={() => window.location.href = "/inbox"}>Inbox</Button>
+          <Button variant="ghost" size="sm">Schedule</Button>
           <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Account")}>Account</Button>
         </div>
 
