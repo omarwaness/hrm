@@ -5,29 +5,20 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
 } from "@/components/ui/sidebar"
 
-export function EmployeeSidebar({ setActiveComponent, ...props }) {
+export function AdminSidebar({ setActiveComponent, ...props }) {
   return (
     <Sidebar className="top-(--header-height) h-[calc(100svh-var(--header-height))]!" {...props}>
       <SidebarHeader></SidebarHeader>
       <SidebarContent className="p-4 flex flex-col gap-2">
         <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("Inbox")}>  
           <Inbox className="mr-2 h-5 w-5" />
-          Inbox
-        </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("Contract")}>  
-          <FileText className="mr-2 h-5 w-5" />
-          Contract
-        </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("LeaveRequest")}>  
-          <Calendar className="mr-2 h-5 w-5" />
-          Leave
-        </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("ResignationForm")}>  
-          <LogOut className="mr-2 h-5 w-5" />
-          Resignation
+          Admin
         </Button>
       </SidebarContent>
       <SidebarFooter>
@@ -39,3 +30,4 @@ export function EmployeeSidebar({ setActiveComponent, ...props }) {
     </Sidebar>
   );
 }
+
