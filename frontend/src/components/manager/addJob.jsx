@@ -178,7 +178,7 @@ const AddJob = () => {
                <Button type="submit" className="text-sm py-2 px-3">
                  Submit Job Offer
                 </Button>
-              s</div>
+              </div>
 
             </form>
           </CardContent>
