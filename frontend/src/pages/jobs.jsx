@@ -1,7 +1,7 @@
 import JobBoard from "@/components/jobs/job-board"
 import { JobsHeader } from "@/components/jobs/jobs-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-
+import Footer from "@/components/Footer"
 export default function Jobs() {
   return (
     <div className="[--header-height:calc(theme(spacing.14))]">
@@ -13,6 +13,7 @@ export default function Jobs() {
           </SidebarInset>
         </div>
       </SidebarProvider>
+      <Footer />
     </div>
   )
 }

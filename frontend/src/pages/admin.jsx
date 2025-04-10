@@ -8,7 +8,7 @@ import Account from "@/components/Account";
 import Dashboard from "@/components/dashboard";
 import Inbox from "@/components/inbox";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
-
+import Footer from "@/components/Footer";
 // Importing the components for each section
 
 export default function Admin() {
@@ -47,6 +47,7 @@ export default function Admin() {
           </SidebarInset>
         </div>
       </SidebarProvider>
+      <Footer />
     </div>
   );
 }
