@@ -8,12 +8,12 @@ import Resignation from "@/components/employee/resignation";
 import Account from "@/components/Account";
 import Dashboard from "@/components/dashboard";
 import Inbox from "@/components/inbox";
-
+import Footer from "@/components/Footer";
 // Importing the components for each section
 
 export default function Employee() {
   const [activeComponent, setActiveComponent] = React.useState("Dashboard");
-
+  
   // Function to render the active component
   const renderComponent = () => {
     switch (activeComponent) {
@@ -46,7 +46,11 @@ export default function Employee() {
             </div>
           </SidebarInset>
         </div>
+        <Footer />
+
+        
       </SidebarProvider>
+      
     </div>
   );
 }

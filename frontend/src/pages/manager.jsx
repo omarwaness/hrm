@@ -18,7 +18,7 @@ import JobList from "@/components/manager/jobList";
 import AddJob from "@/components/manager/addJob";
 import UpdateJob from "@/components/manager/updateJob";
 import JobApplications from "@/components/manager/jobApplications";
-
+import Footer from "@/components/Footer";
 // Importing the components for each section
 
 export default function Manager() {
@@ -70,7 +70,9 @@ export default function Manager() {
             </div>
           </SidebarInset>
         </div>
+        <Footer />
       </SidebarProvider>
+      
     </div>
   );
 }
