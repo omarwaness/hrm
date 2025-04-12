@@ -160,7 +160,7 @@ function JobApplications() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <p>Loading applications...</p>
+        <p className="text-slate-800 dark:text-slate-200">Loading applications...</p>
       </div>
     );
   }
@@ -168,9 +168,9 @@ function JobApplications() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">Job Applications</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Job Applications</h2>
         <div className="flex items-center gap-4">
-          <Label htmlFor="filter-status">Filter by status:</Label>
+          <Label htmlFor="filter-status" className="text-slate-800 dark:text-slate-200">Filter by status:</Label>
           <Select value={filter} onValueChange={setFilter}>
             <SelectTrigger id="filter-status" className="w-[180px]">
               <SelectValue placeholder="Filter by status" />
@@ -188,7 +188,7 @@ function JobApplications() {
       {filteredApplications.length === 0 ? (
         <Card>
           <CardContent className="flex justify-center items-center h-64">
-            <p className="text-muted-foreground">No applications found.</p>
+            <p className="text-slate-500 dark:text-slate-400">No applications found.</p>
           </CardContent>
         </Card>
       ) : (
@@ -208,13 +208,13 @@ function JobApplications() {
                   </Avatar>
                   <div className="flex-1 space-y-1">
                     <div className="flex justify-between">
-                      <h3 className="font-semibold">{application.applicantName}</h3>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">{application.applicantName}</h3>
                       <div>{getStatusBadge(application.status)}</div>
                     </div>
-                    <p className="text-sm text-muted-foreground">{application.email} • {application.phone}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{application.email} • {application.phone}</p>
                     <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium">Applied for: {application.jobTitle}</p>
-                      <p className="text-sm text-muted-foreground">Applied on: {application.applyDate}</p>
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Applied for: {application.jobTitle}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Applied on: {application.applyDate}</p>
                     </div>
                   </div>
                 </div>
@@ -235,8 +235,8 @@ function JobApplications() {
           {selectedApplication && (
             <>
               <SheetHeader className="pb-4">
-                <SheetTitle className="text-2xl">Application Details</SheetTitle>
-                <SheetDescription>
+                <SheetTitle className="text-2xl font-bold text-slate-900 dark:text-white">Application Details</SheetTitle>
+                <SheetDescription className="text-base text-slate-600 dark:text-slate-200">
                   Review application for {selectedApplication.jobTitle}
                 </SheetDescription>
               </SheetHeader>
@@ -253,9 +253,9 @@ function JobApplications() {
                     )}
                   </Avatar>
                   <div>
-                    <h3 className="text-xl font-semibold">{selectedApplication.applicantName}</h3>
-                    <p className="text-muted-foreground">{selectedApplication.email}</p>
-                    <p className="text-muted-foreground">{selectedApplication.phone}</p>
+                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{selectedApplication.applicantName}</h3>
+                    <p className="text-slate-500 dark:text-slate-400">{selectedApplication.email}</p>
+                    <p className="text-slate-500 dark:text-slate-400">{selectedApplication.phone}</p>
                   </div>
                   <div className="ml-auto">
                     {getStatusBadge(selectedApplication.status)}
@@ -263,46 +263,46 @@ function JobApplications() {
                 </div>
                 
                 <div className="grid gap-4 border rounded-lg p-4">
-                  <h4 className="font-semibold">Application Summary</h4>
+                  <h4 className="font-semibold text-slate-900 dark:text-white">Application Summary</h4>
                   <div className="grid gap-2">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Position:</span>
-                      <span className="font-medium">{selectedApplication.jobTitle}</span>
+                      <span className="text-slate-500 dark:text-slate-400">Position:</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{selectedApplication.jobTitle}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Department:</span>
-                      <span>{selectedApplication.department}</span>
+                      <span className="text-slate-500 dark:text-slate-400">Department:</span>
+                      <span className="text-slate-800 dark:text-slate-200">{selectedApplication.department}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Applied On:</span>
-                      <span>{selectedApplication.applyDate}</span>
+                      <span className="text-slate-500 dark:text-slate-400">Applied On:</span>
+                      <span className="text-slate-800 dark:text-slate-200">{selectedApplication.applyDate}</span>
                     </div>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
-                  <h4 className="font-semibold">Cover Letter</h4>
+                  <h4 className="font-semibold text-slate-900 dark:text-white">Cover Letter</h4>
                   <div className="border rounded-lg p-4">
-                    <p className="whitespace-pre-line">{selectedApplication.coverLetter}</p>
+                    <p className="whitespace-pre-line text-slate-800 dark:text-slate-200">{selectedApplication.coverLetter}</p>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
-                  <h4 className="font-semibold">Experience</h4>
+                  <h4 className="font-semibold text-slate-900 dark:text-white">Experience</h4>
                   <div className="border rounded-lg p-4">
-                    <p>{selectedApplication.experience}</p>
+                    <p className="text-slate-800 dark:text-slate-200">{selectedApplication.experience}</p>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
-                  <h4 className="font-semibold">Education</h4>
+                  <h4 className="font-semibold text-slate-900 dark:text-white">Education</h4>
                   <div className="border rounded-lg p-4">
-                    <p>{selectedApplication.education}</p>
+                    <p className="text-slate-800 dark:text-slate-200">{selectedApplication.education}</p>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
-                  <h4 className="font-semibold">Skills</h4>
+                  <h4 className="font-semibold text-slate-900 dark:text-white">Skills</h4>
                   <div className="border rounded-lg p-4 flex flex-wrap gap-2">
                     {selectedApplication.skills.map((skill, index) => (
                       <Badge key={index} variant="secondary">{skill}</Badge>
@@ -311,7 +311,7 @@ function JobApplications() {
                 </div>
                 
                 <div className="space-y-4">
-                  <h4 className="font-semibold">Resume</h4>
+                  <h4 className="font-semibold text-slate-900 dark:text-white">Resume</h4>
                   <div className="border rounded-lg p-4">
                     <a 
                       href={selectedApplication.resume} 

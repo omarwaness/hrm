@@ -54,7 +54,8 @@ export default function EmployeeList() {
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">Employee Directory</h1>
+        <h1 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white">Employee Directory</h1>
+        <p className="text-base text-slate-600 dark:text-slate-200 mb-6">View and manage employee records</p>
         <div className="grid gap-4">
           {employees.map((employee) => (
             <Card key={employee.id} className="relative">
@@ -102,20 +103,20 @@ export default function EmployeeList() {
               {/* Rest of the Card content */}
               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 pt-10"> {/* Added pt-10 to avoid overlap with button */}
                 <div>
-                  <p className="text-sm text-gray-500">First Name</p>
-                  <p className="font-medium">{employee.firstName}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">First Name</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{employee.firstName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Last Name</p>
-                  <p className="font-medium">{employee.lastName}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Last Name</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{employee.lastName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-medium">{employee.email}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Email</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{employee.email}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Phone</p>
-                  <p className="font-medium">{employee.phone}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Phone</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{employee.phone}</p>
                 </div>
               </CardContent>
             </Card>
