@@ -100,7 +100,7 @@ function UpdateJob() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <p>Loading jobs...</p>
+        <p className="text-slate-800 dark:text-slate-200">Loading jobs...</p>
       </div>
     );
   }
@@ -109,11 +109,11 @@ function UpdateJob() {
     <div className="container mx-auto py-6">
       <Card>
         <CardHeader>
-          <CardTitle>Update Job Posting</CardTitle>
+          <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">Update Job Posting</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <Label htmlFor="job-select">Select Job to Update</Label>
+            <Label htmlFor="job-select" className="text-slate-800 dark:text-slate-200">Select Job to Update</Label>
             <Select value={selectedJobId} onValueChange={handleJobSelect}>
               <SelectTrigger id="job-select" className="w-full">
                 <SelectValue placeholder="Choose a job to update" />
@@ -131,7 +131,7 @@ function UpdateJob() {
           {selectedJobId && (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="title">Job Title</Label>
+                <Label htmlFor="title" className="text-slate-800 dark:text-slate-200">Job Title</Label>
                 <Input 
                   id="title"
                   name="title"
@@ -143,7 +143,7 @@ function UpdateJob() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Job Description</Label>
+                <Label htmlFor="description" className="text-slate-800 dark:text-slate-200">Job Description</Label>
                 <Textarea 
                   id="description"
                   name="description"
@@ -156,7 +156,7 @@ function UpdateJob() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="requirements">Job Requirements</Label>
+                <Label htmlFor="requirements" className="text-slate-800 dark:text-slate-200">Job Requirements</Label>
                 <Textarea 
                   id="requirements"
                   name="requirements"
@@ -170,7 +170,7 @@ function UpdateJob() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="salaryRange">Salary Range</Label>
+                  <Label htmlFor="salaryRange" className="text-slate-800 dark:text-slate-200">Salary Range</Label>
                   <Input 
                     id="salaryRange"
                     name="salaryRange"
@@ -182,7 +182,7 @@ function UpdateJob() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
+                  <Label htmlFor="location" className="text-slate-800 dark:text-slate-200">Location</Label>
                   <Input 
                     id="location"
                     name="location"
@@ -196,7 +196,7 @@ function UpdateJob() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="department">Department</Label>
+                  <Label htmlFor="department" className="text-slate-800 dark:text-slate-200">Department</Label>
                   <Input 
                     id="department"
                     name="department"
@@ -208,7 +208,7 @@ function UpdateJob() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="employmentType">Employment Type</Label>
+                  <Label htmlFor="employmentType" className="text-slate-800 dark:text-slate-200">Employment Type</Label>
                   <Input 
                     id="employmentType"
                     name="employmentType"
@@ -221,7 +221,7 @@ function UpdateJob() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="experienceLevel">Experience Level</Label>
+                <Label htmlFor="experienceLevel" className="text-slate-800 dark:text-slate-200">Experience Level</Label>
                 <Input 
                   id="experienceLevel"
                   name="experienceLevel"
@@ -233,7 +233,7 @@ function UpdateJob() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="education">Education Requirements</Label>
+                <Label htmlFor="education" className="text-slate-800 dark:text-slate-200">Education Requirements</Label>
                 <Input 
                   id="education"
                   name="education"
@@ -245,7 +245,7 @@ function UpdateJob() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="skills">Required Skills</Label>
+                <Label htmlFor="skills" className="text-slate-800 dark:text-slate-200">Required Skills</Label>
                 <Input 
                   id="skills"
                   name="skills"
@@ -257,7 +257,7 @@ function UpdateJob() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="benefits">Benefits</Label>
+                <Label htmlFor="benefits" className="text-slate-800 dark:text-slate-200">Benefits</Label>
                 <Textarea 
                   id="benefits"
                   name="benefits"
