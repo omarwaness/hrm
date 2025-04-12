@@ -39,7 +39,7 @@ const initialEmployees = [
   },
 ];
 
-export default function EmployeeListPage() {
+export default function EmployeeList() {
   const [employees, setEmployees] = useState(initialEmployees);
 
   // Simplified delete function, accepts the ID directly
