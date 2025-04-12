@@ -7,10 +7,10 @@ import Footer from "./Footer";
 export default function AboutUsComponent() {
   const teamMembers = [
     {name: "Omar Salah Eldine Wannes", role:"Project Manager",
-        image:"/images/alice.jpg", contact:"https://github.com/omarwaness",
+        image:"/images/OmarImage.jpg", contact:"https://github.com/omarwaness",
     },
     { name: "Ahmed Khalil Omrani",role: "Software Developer",
-      image: "/images/bob.jpg",contact: "https://github.com/ahmed-khalil-omrani",
+      image: "/images/AhmedImage.jpg",contact: "https://github.com/ahmed-khalil-omrani",
     },
     {
       name: "Ayoub Lani",role: "Software Developer",
