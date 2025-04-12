@@ -1,19 +1,17 @@
-"use client"
-
-import { AlignJustify, Sun, Moon, LogOut, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { useSidebar } from "@/components/ui/sidebar"
-import { useEffect, useState } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { AlignJustify, Sun, Moon, LogOut, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { useSidebar } from "@/components/ui/sidebar";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const getSystemTheme = () => {
   if (typeof window !== 'undefined') {
@@ -97,63 +95,61 @@ export function SiteHeader({ setActiveComponent }) {
   };
 
   return (
-    <>
-      <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b">
-        <div className="flex h-16 w-full items-center gap-2 px-4">
-          {toggleSidebar && (
-            <>
-              <Button className="h-8 w-8" variant="ghost" size="icon" onClick={toggleSidebar}>
-                <AlignJustify className="h-6 w-6" strokeWidth={1.5} />
-              </Button>
-              <Separator orientation="vertical" className="mr-2 h-6" />
-            </>
-          )}
-
-          <div className="mr-4 flex items-center">
-            <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-bold">
-              JN
-            </div>
-          </div>
-
-          <div className="hidden md:flex items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Dashboard")}>Dashboard</Button>
-            <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Inbox")}>Inbox</Button>
-            <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Account")}>Account</Button>
-          </div>
-
-          <div className="ml-auto flex items-center gap-2">
-            <Button className="h-8 w-8" variant="ghost" size="icon" onClick={toggleTheme}>
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+    <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b">
+      <div className="flex h-16 w-full items-center gap-2 px-4">
+        {toggleSidebar && (
+          <>
+            <Button className="h-8 w-8" variant="ghost" size="icon" onClick={toggleSidebar}>
+              <AlignJustify className="h-6 w-6" strokeWidth={1.5} />
             </Button>
+            <Separator orientation="vertical" className="mr-2 h-6" />
+          </>
+        )}
 
-            {isAuthenticated() ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
-                      <AvatarFallback>U</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    Account
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="outline" onClick={() => navigate("/login")}>Login</Button>
-            )}
+        <div className="mr-4 flex items-center">
+          <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground font-bold">
+            JN
           </div>
         </div>
-      </header>
-    </>
-  )
+
+        <div className="hidden md:flex items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Dashboard")}>Dashboard</Button>
+          <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Inbox")}>Inbox</Button>
+          <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Account")}>Account</Button>
+        </div>
+
+        <div className="ml-auto flex items-center gap-2">
+          <Button className="h-8 w-8" variant="ghost" size="icon" onClick={toggleTheme}>
+            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
+
+          {isAuthenticated() ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  Account
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="outline" onClick={() => navigate("/login")}>Login</Button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
 }

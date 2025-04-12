@@ -8,6 +8,7 @@ import ForgotPassword from "./components/forgot-password-page"
 import Settings from "./pages/settings"
 import Admin from "./pages/admin"
 import Manager from "./pages/manager"
+import AboutUs from "./pages/Aboutus"
 
 
 // This is new
@@ -15,6 +16,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        
         <Route path="/" element={<Page />} />
         <Route path="/admin" element={<Admin/>} />
         <Route path="/manager" element={<Manager/>} />
@@ -24,6 +26,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/settings" element={<Settings/>} />
+        <Route path="AboutUs" element={<AboutUs/>}/>
       </Routes>
     </Router>
   )

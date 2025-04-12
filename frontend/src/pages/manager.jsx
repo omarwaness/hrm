@@ -1,9 +1,6 @@
 import * as React from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import Contract from "@/components/employee/contract";
-import LeaveRequest from "@/components/employee/leave-request";
-import Resignation from "@/components/employee/resignation";
 import Account from "@/components/Account";
 import Dashboard from "@/components/dashboard";
 import Inbox from "@/components/inbox";
@@ -18,7 +15,7 @@ import JobList from "@/components/manager/jobList";
 import AddJob from "@/components/manager/addJob";
 import UpdateJob from "@/components/manager/updateJob";
 import JobApplications from "@/components/manager/jobApplications";
-
+import Footer from "@/components/Footer";
 // Importing the components for each section
 
 export default function Manager() {
@@ -70,7 +67,9 @@ export default function Manager() {
             </div>
           </SidebarInset>
         </div>
+        <Footer />
       </SidebarProvider>
+      
     </div>
   );
 }

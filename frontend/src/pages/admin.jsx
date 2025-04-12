@@ -1,14 +1,16 @@
 import * as React from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import Contract from "@/components/employee/contract";
-import LeaveRequest from "@/components/employee/leave-request";
-import Resignation from "@/components/employee/resignation";
 import Account from "@/components/Account";
 import Dashboard from "@/components/dashboard";
 import Inbox from "@/components/inbox";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
-
+import Footer from "@/components/Footer";
+import EmployeeList from "@/components/manager/employeeList";
+import AddEmployee from "@/components/manager/addEmployee";
+import UpdateEmployee from "@/components/manager/updateEmployee";
+import GenerateReport from "@/components/manager/generateReport";
+import SavedReports from "@/components/manager/savedReports";
 // Importing the components for each section
 
 export default function Admin() {
@@ -19,20 +21,22 @@ export default function Admin() {
     switch (activeComponent) {
       case "Dashboard":
         return <Dashboard/>;
-      case "Inbox":
-        return <Inbox/>;
-      case "Contract":
-        return <Contract />;
-      case "LeaveRequest":
-        return <LeaveRequest />;
-      case "ResignationForm":
-        return <Resignation />;
       case "Account":
         return <Account/>;
-      default:
-        return <Dashboard/>;
-    }
+      case "Inbox":
+        return <Inbox/>;
+      case "ViewEmpolyees":
+        return <EmployeeList/>;
+      case "AddEmpolyee":
+        return <AddEmployee/>;
+      case "UpdateEmpolyee":
+        return <UpdateEmployee/>;
+      case "Generate":
+        return <GenerateReport/>;
+      case "Saved":
+        return <SavedReports/>;
   };
+}
 
   return (
     <div className="[--header-height:calc(theme(spacing.14))]">
@@ -47,6 +51,7 @@ export default function Admin() {
           </SidebarInset>
         </div>
       </SidebarProvider>
+      <Footer />
     </div>
   );
 }

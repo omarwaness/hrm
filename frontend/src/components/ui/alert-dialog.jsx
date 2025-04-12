@@ -120,11 +120,8 @@ function AlertDialogCancel({
       {...props} />
   );
 }
-
 export {
   AlertDialog,
-  AlertDialogPortal,
-  AlertDialogOverlay,
   AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
@@ -134,3 +131,4 @@ export {
   AlertDialogAction,
   AlertDialogCancel,
 }
+
