@@ -110,14 +110,14 @@ function LeaveList() {
     <div className="container max-w-6xl mx-auto py-4">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Employee Leave Requests</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl font-bold text-slate-900 dark:text-white">Employee Leave Requests</CardTitle>
+          <CardDescription className="text-base text-slate-600 dark:text-slate-200">
             Review and manage leave requests from your team members
           </CardDescription>
         </CardHeader>
         <CardContent>
           {leaveRequests.length === 0 ? (
-            <p className="text-center text-muted-foreground py-6">No leave requests to display</p>
+            <p className="text-center text-slate-500 dark:text-slate-400 py-6">No leave requests to display</p>
           ) : (
             <div className="space-y-3">
               {leaveRequests.map((request) => (
@@ -129,10 +129,10 @@ function LeaveList() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <User className="h-5 w-5 text-muted-foreground" />
+                          <User className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                           <div>
-                            <p className="font-medium">{request.employeeName}</p>
-                            <p className="text-xs text-muted-foreground">{request.employeeId}</p>
+                            <p className="font-medium text-slate-900 dark:text-white">{request.employeeName}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{request.employeeId}</p>
                           </div>
                         </div>
                         {getStatusBadge(request.status)}
@@ -140,21 +140,21 @@ function LeaveList() {
                       
                       <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">
+                          <Calendar className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                          <span className="text-sm text-slate-900 dark:text-white">
                             {formatDate(request.fromDate)} - {formatDate(request.toDate)}
                           </span>
                         </div>
-                        <div className="text-sm">
+                        <div className="text-sm text-slate-900 dark:text-white">
                           <span className="font-medium">{request.totalDays} days</span>
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-slate-500 dark:text-slate-400">
                           Requested on {formatDate(request.requestDate)}
                         </div>
                       </div>
                       
                       <div className="mt-2">
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
                           {request.reason}
                           <Button variant="ghost" size="sm" className="ml-1 h-6 px-1">
                             <ChevronDown className="h-4 w-4" />
@@ -175,42 +175,42 @@ function LeaveList() {
         <Sheet open={isDetailOpen} onOpenChange={setIsDetailOpen}>
           <SheetContent className="sm:max-w-md w-full">
             <SheetHeader className="px-4">
-              <SheetTitle>Leave Request Details</SheetTitle>
-              <SheetDescription>
+              <SheetTitle className="text-xl font-bold text-slate-900 dark:text-white">Leave Request Details</SheetTitle>
+              <SheetDescription className="text-base text-slate-600 dark:text-slate-200">
                 Review the complete request information
               </SheetDescription>
             </SheetHeader>
             
-            <div className=" space-y-5 px-4">
+            <div className="space-y-5 px-4">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Employee</h3>
-                <p className="text-base">{selectedRequest.employeeName} ({selectedRequest.employeeId})</p>
+                <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Employee</h3>
+                <p className="text-base text-slate-900 dark:text-white">{selectedRequest.employeeName} ({selectedRequest.employeeId})</p>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">From Date</h3>
-                  <p className="text-base">{formatDate(selectedRequest.fromDate)}</p>
+                  <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">From Date</h3>
+                  <p className="text-base text-slate-900 dark:text-white">{formatDate(selectedRequest.fromDate)}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">To Date</h3>
-                  <p className="text-base">{formatDate(selectedRequest.toDate)}</p>
+                  <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">To Date</h3>
+                  <p className="text-base text-slate-900 dark:text-white">{formatDate(selectedRequest.toDate)}</p>
                 </div>
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Total Days</h3>
-                <p className="text-base">{selectedRequest.totalDays} days</p>
+                <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Total Days</h3>
+                <p className="text-base text-slate-900 dark:text-white">{selectedRequest.totalDays} days</p>
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Status</h3>
+                <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Status</h3>
                 <div className="mt-1">{getStatusBadge(selectedRequest.status)}</div>
               </div>
               
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Reason</h3>
-                <p className="text-base mt-1 leading-relaxed whitespace-pre-line">{selectedRequest.reason}</p>
+                <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Reason</h3>
+                <p className="text-base mt-1 leading-relaxed whitespace-pre-line text-slate-900 dark:text-white">{selectedRequest.reason}</p>
               </div>
             </div>
             

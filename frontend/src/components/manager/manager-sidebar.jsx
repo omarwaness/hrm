@@ -18,60 +18,60 @@ export function ManagerSidebar({ setActiveComponent, ...props }) {
           Message
         </Button>
 
-        <div className="text-m font-semibold text-secondary-foreground mb-1 px-2 uppercase">
+        <div className="text-m font-semibold text-slate-900 dark:text-white mb-1 px-2 uppercase">
           Employees
         </div>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("ViewEmpolyees")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("ViewEmpolyees")}>  
           <Users className="mr-2 h-5 w-5" />
           View
         </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("AddEmpolyee")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("AddEmpolyee")}>  
           <UserPlus className="mr-2 h-5 w-5" />
           Add
         </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("UpdateEmpolyee")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("UpdateEmpolyee")}>  
           <UserPen className="mr-2 h-5 w-5" />
           Update
         </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("Leave")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("Leave")}>  
           <TreePalm className="mr-2 h-5 w-5" />
           Leave
         </Button>
 
-        <div className="text-m font-semibold text-secondary-foreground mb-1 px-2 uppercase">
+        <div className="text-m font-semibold text-slate-900 dark:text-white mb-1 px-2 uppercase">
           Reports
         </div>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("Generate")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("Generate")}>  
           <Folder className="mr-2 h-5 w-5" />
           Generate
         </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("Saved")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("Saved")}>  
           <Save className="mr-2 h-5 w-5" />
           Saved
         </Button>
 
-        <div className="text-m font-semibold text-secondary-foreground mb-1 px-2 uppercase">
+        <div className="text-m font-semibold text-slate-900 dark:text-white mb-1 px-2 uppercase">
           Job Offers
         </div>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("View")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("View")}>  
           <Files className="mr-2 h-5 w-5" />
           View
         </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("Add")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("Add")}>  
           <FilePlus className="mr-2 h-5 w-5" />
           Add
         </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("Update")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("Update")}>  
           <FileSearch2 className="mr-2 h-5 w-5" />
           Update
         </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("Application")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("Application")}>  
           <FileUser className="mr-2 h-5 w-5" />
           Applications
         </Button>
       </SidebarContent>
       <SidebarFooter>
-        <Button variant="outline" className="justify-start w-full">
+        <Button variant="outline" className="justify-start w-full text-slate-800 dark:text-slate-200">
           <Settings className="mr-2 h-5 w-5" />
           Settings
         </Button>
