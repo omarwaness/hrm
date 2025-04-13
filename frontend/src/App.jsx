@@ -17,13 +17,8 @@ function App() {
   return (
     <Router>
       <Routes>
-<<<<<<< HEAD
-        <Route path="/" element={<Page />} />
-=======
         <Route path="/" element={<LandingPage />} />
-        <Route path="/landingPage" element={<LandingPage />} />
         <Route path="/dashboard" element={<Page />} />
->>>>>>> 75f43eeef2c2757c2bdf6efcea92a0b8148dc79f
         <Route path="/admin" element={<Admin/>} />
         <Route path="/manager" element={<Manager/>} />
         <Route path="/employee" element={<Employee />} />
