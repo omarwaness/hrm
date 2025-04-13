@@ -1,6 +1,6 @@
-const express=require("express");
-const User=require('../models/Users');
-const router=express.Router();
+const express=require("express")
+const User=require('../models/Users')
+const router=express.Router()
 const crypt=require('bcrypt')
 
 router.get("/:email",async(req , res)=>
