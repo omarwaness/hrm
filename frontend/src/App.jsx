@@ -10,6 +10,7 @@ import Admin from "./pages/admin"
 import Manager from "./pages/manager"
 import AboutUs from "./pages/Aboutus"
 import LandingPage from "./pages/landingPage"
+import PasswordReset from "./components/reset"
 
 
 // This is new
@@ -25,7 +26,8 @@ function App() {
         <Route path="/employee" element={<Employee />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={< CreateAccount/>} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/forgot-password-page" element={<ForgotPassword />} />
+        <Route path="/reset/:token" element={<PasswordReset />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/settings" element={<Settings/>} />
         <Route path="/about" element={<AboutUs/>}/>
