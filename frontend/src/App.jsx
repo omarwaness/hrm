@@ -19,7 +19,6 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/landingPage" element={<LandingPage />} />
         <Route path="/dashboard" element={<Page />} />
         <Route path="/admin" element={<Admin/>} />
         <Route path="/manager" element={<Manager/>} />

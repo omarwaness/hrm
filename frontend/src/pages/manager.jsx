@@ -16,6 +16,7 @@ import AddJob from "@/components/manager/addJob";
 import UpdateJob from "@/components/manager/updateJob";
 import JobApplications from "@/components/manager/jobApplications";
 import Footer from "@/components/Footer";
+import Message from "@/components/manager/message";
 // Importing the components for each section
 
 export default function Manager() {
@@ -30,6 +31,8 @@ export default function Manager() {
         return <Account/>;
       case "Inbox":
         return <Inbox/>;
+        case "Message":
+        return <Message/>;
       case "ViewEmpolyees":
         return <EmployeeList/>;
       case "AddEmpolyee":
