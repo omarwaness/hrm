@@ -64,6 +64,22 @@ router.delete("/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
-});
+})
+
+// GET list of leave requests by email
+router.get("/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const requests = await Leave.find({ sender: email }).select("createdAt")
+
+    if (requests.length > 0) {
+      res.status(200).json(requests);
+    } else {
+      res.status(404).json({ message: "No leave requests found for this email" })
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
 
 module.exports = router

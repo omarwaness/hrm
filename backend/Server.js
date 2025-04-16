@@ -18,10 +18,13 @@ mongoose.connect(process.env.MONGO_URI)
 .then(()=>console.log("Mongo Connected"))
 .catch((err)=>console.error(err));
 
-app.use("/api/auth",require("./Routes/authRoutes"));
+app.use("/api/auth",require("./Routes/authRoutes"))
+app.use("/api/message", require("./Routes/messagesRoutes"))
+app.use("/api/leave", require("./Routes/leaveRoutes"))
+app.use("/api/user", require("./Routes/userRoutes"))
+app.use("/api/reports", require("./Routes/reportRoutes"));
 
-app.use("/api/messages", require("./Routes/messagesRoutes"));
-app.use("/api/leaves", require("./Routes/leaveRoutes"))
+
 
 const PORT=process.env.PORT || 5000;
 app.listen(PORT,'0.0.0.0',()=>console.log(`Server listen on port ${PORT}`));
