@@ -9,11 +9,26 @@ import Account from "@/components/Account";
 import Dashboard from "@/components/dashboard";
 import Inbox from "@/components/inbox";
 import Footer from "@/components/Footer";
+import {useNavigate} from'react-router-dom';
+import {jwtDecode} from 'jwt-decode'
 // Importing the components for each section
 
 export default function Employee() {
   const [activeComponent, setActiveComponent] = React.useState("Dashboard");
-  
+  const navigate=useNavigate();
+  React.useEffect(()=>{
+    const token=localStorage.getItem('token');
+    if(token){
+      const user=jwtDecode(token);
+      if(user.role!=="Employee"){
+        navigate('/error')
+      }
+
+    }else(
+      navigate('/error')
+    )
+    
+  })
   // Function to render the active component
   const renderComponent = () => {
     switch (activeComponent) {
@@ -35,6 +50,8 @@ export default function Employee() {
   };
 
   return (
+    
+
     <div className="[--header-height:calc(theme(spacing.14))]">
       <SidebarProvider className="flex flex-col">
         <SiteHeader setActiveComponent={setActiveComponent} />

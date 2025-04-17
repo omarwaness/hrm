@@ -1,5 +1,5 @@
 "use server"
-
+import { jwtDecode } from "jwt-decode"
 // This is a mock database function
 // In a real application, you would connect to your database here
 export async function getEmployeeContract() {
@@ -7,13 +7,15 @@ export async function getEmployeeContract() {
   await new Promise((resolve) => setTimeout(resolve, 1500))
 
   // Mock contract data
+  const user=jwtDecode(localStorage.getItem('token'))
   return {
-    id: "contract-2023-001",
+    id: user.id,
     title: "Employment Contract",
-    position: "Software Developer",
+    position: user.role,
     salary: "$85,000 per annum",
-    startDate: "January 15, 2023",
-    endDate: "Indefinite",
+    startDate: new Date(user.createAt).toLocaleDateString()
+    ,
+    endDate: "",
     content: `EMPLOYMENT AGREEMENT
 
 This Employment Agreement (the "Agreement") is made and effective as of January 15, 2023, by and between Acme Corporation ("Employer") and John Doe ("Employee").

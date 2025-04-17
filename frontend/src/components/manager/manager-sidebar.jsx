@@ -25,7 +25,7 @@ export function ManagerSidebar({ setActiveComponent, ...props }) {
           <Users className="mr-2 h-5 w-5" />
           View
         </Button>
-        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("AddEmpolyee")}>  
+        <Button variant="ghost" className="justify-start text-slate-800 dark:text-slate-200" onClick={() => setActiveComponent("create-account")}>  
           <UserPlus className="mr-2 h-5 w-5" />
           Add
         </Button>

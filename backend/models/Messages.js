@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+/*const mongoose = require("mongoose")
 
 const MessageSchema = new mongoose.Schema(
   {
@@ -11,4 +11,14 @@ const MessageSchema = new mongoose.Schema(
   }
 )
 
-module.exports = mongoose.model("Message", MessageSchema)
+module.exports = mongoose.model("Message", MessageSchema)*/
+const mongoose=require('mongoose')
+
+const MessageSchema=new mongoose.Schema(
+  {
+    sender:{type:String,required:true},
+    reciever:{type:String,require:true},
+    content:{type:String,require:true}
+  },{timestamps:true}
+)
+module.exports=mongoose.model('Message',MessageSchema)

@@ -10,7 +10,8 @@ import Admin from "./pages/admin"
 import Manager from "./pages/manager"
 import AboutUs from "./pages/Aboutus"
 import LandingPage from "./pages/landingPage"
-
+import Error from "./pages/Error"
+import Loading  from "./components/Loading"
 
 // This is new
 function App() {
@@ -28,10 +29,15 @@ function App() {
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/settings" element={<Settings/>} />
         <Route path="/about" element={<AboutUs/>}/>
+        <Route path="/error" element={<Error/>}/>
+        <Route path="/loading" element={<Loading/>}/>
         <Route path="*" element={<Navigate to="/" replace />} />
+        
+        
       </Routes>
     </Router>
   )
 }
 
 export default App
+ 
