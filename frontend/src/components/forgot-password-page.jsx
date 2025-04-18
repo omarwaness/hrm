@@ -23,21 +23,36 @@ export function ForgotPassword({ className, ...props }) {
     setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!email.trim()) {
       setError("Please enter a valid email.");
       return;
     }
-
+  
     setLoading(true);
-
-    setTimeout(() => {
+  
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/forgot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+  
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || "Something went wrong.");
+      } else {
+        setSuccess(true);
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
       setLoading(false);
-      setSuccess(true);
-    }, 2000);
+    }
   };
+  
 
   return (
     <div className={cn("flex min-h-screen items-center justify-center", className)} {...props}>
@@ -55,7 +70,7 @@ export function ForgotPassword({ className, ...props }) {
               Email has been sent. Please check your inbox.
             </p>
           ) : (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} action="/users/forgot" method="POST">
               <div className="grid gap-6">
                 <div className="grid gap-3">
                   <Label htmlFor="email">Email</Label>
