@@ -27,6 +27,21 @@ router.post("/register",async(req,res)=>{
     }}
 
 );
+function generateJWT(user){
+    const payload={
+        id:user._id,
+        firstName:user.firstName,
+        lastName:user.lastName,
+        phoneNumber:user.phoneNumber,
+        role:user.role,
+        email:user.email,
+        createAt:user.createdAt
+    }
+    token=jwt.sign(payload,process.env.JWT_SECRET,{expiresIn:"1h"})
+    return token
+
+
+}
 
 router.post("/login",async(req,res)=>{
     try{
@@ -35,7 +50,7 @@ router.post("/login",async(req,res)=>{
         if(!user) return res.status(404).json({message:"User not found"});
         const isMatch=await crypt.compare(password,user.password);
         if(!isMatch) return res.status(500).json({message:'password dosnèt match'});
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        const token = generateJWT(user);
         res.cookie("token", token, { httpOnly: true });
         res.status(200).json({ message: "Login Successfully", token });
         

@@ -18,12 +18,12 @@ mongoose.connect(process.env.MONGO_URI)
 .then(()=>console.log("Mongo Connected"))
 .catch((err)=>console.error(err));
 
+
 app.use("/api/auth",require("./Routes/authRoutes"))
 app.use("/api/message", require("./Routes/messagesRoutes"))
 app.use("/api/leave", require("./Routes/leaveRoutes"))
 app.use("/api/user", require("./Routes/userRoutes"))
 app.use("/api/reports", require("./Routes/reportRoutes"));
-
 
 
 const PORT=process.env.PORT || 5000;

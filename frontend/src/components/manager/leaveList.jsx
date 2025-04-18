@@ -1,109 +1,139 @@
-import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { 
-  Calendar, 
-  CheckCircle2, 
-  XCircle, 
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  User,
+  Calendar,
   ChevronDown,
-  User 
-} from "lucide-react"
-import { 
+  CheckCircle2,
+  XCircle
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetFooter,
-  SheetClose
-} from "@/components/ui/sheet"
+  SheetClose,
+} from "@/components/ui/sheet";
+import Loading  from "../Loading"; // Assuming you have a Loading component
 
-function LeaveList() {
-  const [selectedRequest, setSelectedRequest] = useState(null)
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
-  
-  // Mock data for leave requests - replace with API call in production
-  const [leaveRequests, setLeaveRequests] = useState([
-    {
-      id: 1,
-      employeeName: "John Doe",
-      employeeId: "EMP001",
-      fromDate: "2024-05-15",
-      toDate: "2024-05-18",
-      totalDays: 4,
-      reason: "I need to take a few days off for a family event. My cousin is getting married in another city, and I'll need to travel there. I'll be available on email for urgent matters, but would appreciate the time away to attend this important family gathering.",
-      status: "pending",
-      requestDate: "2024-05-01"
-    },
-    {
-      id: 2,
-      employeeName: "Jane Smith",
-      employeeId: "EMP002",
-      fromDate: "2024-05-20",
-      toDate: "2024-05-21",
-      totalDays: 2,
-      reason: "I have a medical appointment that requires me to take two days off. I've been experiencing some health issues lately and need to get them checked out properly. This was the earliest appointment I could get with the specialist.",
-      status: "pending",
-      requestDate: "2024-05-03"
-    },
-    {
-      id: 3,
-      employeeName: "Robert Johnson",
-      employeeId: "EMP003",
-      fromDate: "2024-05-25",
-      toDate: "2024-06-01",
-      totalDays: 8,
-      reason: "I'm requesting leave for a vacation that I planned several months ago. I need some time to relax and recharge after the intense project work we've been doing. I've ensured all my current tasks will be completed before I leave, and I've documented my ongoing work for the team.",
-      status: "pending",
-      requestDate: "2024-04-28"
+const LeaveRequestList = () => {
+  const [leaveRequests, setLeaveRequests] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  const leave = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/leave/');
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      console.log(data);
+      setLeaveRequests(data);
+    } catch (error) {
+      console.error("Error fetching leave requests:", error);
+      // Potentially set an error state here to display an error message to the user
+    } finally {
+      setIsLoading(false);
     }
-  ])
+  };
 
-  // Open the detail sheet when a request is clicked
+  useEffect(() => {
+    leave();
+  }, []);
+
   const openRequestDetail = (request) => {
-    setSelectedRequest(request)
-    setIsDetailOpen(true)
-  }
+    setSelectedRequest(request);
+    setIsDetailOpen(true);
+  };
 
-  // Handle approval of a leave request
-  const handleApprove = (id) => {
-    setLeaveRequests(requests => 
-      requests.map(req => 
-        req.id === id ? {...req, status: 'approved'} : req
-      )
-    )
-    // In a real app, you would make an API call here
-    setIsDetailOpen(false)
-  }
+  const handleApprove = async (id) => {
+    try {
+      // Replace with your actual API endpoint and request details
+      const response = await fetch(`http://localhost:5000/api/leave/${id}/approve`, {
+        method: "PUT",  // Or PATCH, depending on your API
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // body: JSON.stringify({ /* Your request body if needed */ }),
+      });
+      if (!response.ok){
+        throw new Error(`HTTP error! Status: ${response.status}`)
+      }
 
-  // Handle denial of a leave request
-  const handleDeny = (id) => {
-    setLeaveRequests(requests => 
-      requests.map(req => 
-        req.id === id ? {...req, status: 'denied'} : req
-      )
-    )
-    // In a real app, you would make an API call here
-    setIsDetailOpen(false)
-  }
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' }
-    return new Date(dateString).toLocaleDateString(undefined, options)
-  }
-
-  // Get status badge color
-  const getStatusBadge = (status) => {
-    switch(status) {
-      case 'approved':
-        return <Badge className="bg-green-100 text-green-800">Approved</Badge>
-      case 'denied':
-        return <Badge className="bg-red-100 text-red-800">Denied</Badge>
-      default:
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
+      setLeaveRequests(requests =>
+        requests.map(req =>
+          req._id === id ? { ...req, status: 'approved' } : req
+        )
+      );
+        leave()
+      // In a real app, you would make an API call here
+      setIsDetailOpen(false);
+    } catch (e){
+      console.log(e)
     }
+
+  };
+
+  const handleDeny = async (id) => {
+    try {
+      // Replace with your actual API endpoint and request details
+      const response = await fetch(`http://localhost:5000/api/leave/${id}/deny`, {
+        method: "PUT",  // Or PATCH, depending on your API
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // body: JSON.stringify({ /* Your request body if needed */ }),
+      });
+      if (!response.ok){
+        throw new Error(`HTTP error! Status: ${response.status}`)
+      }
+      setLeaveRequests(requests =>
+        requests.map(req =>
+          req._id === id ? { ...req, status: 'denied' } : req
+        )
+      );
+      leave()
+
+      setIsDetailOpen(false);
+      // In a real app, you would make an API call here
+
+    } catch (e){
+      console.log(e)
+    }
+
+  };
+
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'approved':
+        return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
+      case 'denied':
+        return <Badge className="bg-red-100 text-red-800">Denied</Badge>;
+      default:
+        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+    }
+  };
+
+  if (isLoading) {
+    return <Loading />;
   }
 
   return (
@@ -121,9 +151,9 @@ function LeaveList() {
           ) : (
             <div className="space-y-3">
               {leaveRequests.map((request) => (
-                <Card key={request.id} className="overflow-hidden">
+                <Card key={request._id} className="overflow-hidden">
                   <CardContent className="p-0">
-                    <div 
+                    <div
                       className="p-4 hover:bg-muted/50 cursor-pointer"
                       onClick={() => openRequestDetail(request)}
                     >
@@ -137,7 +167,7 @@ function LeaveList() {
                         </div>
                         {getStatusBadge(request.status)}
                       </div>
-                      
+
                       <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-slate-500 dark:text-slate-400" />
@@ -152,7 +182,7 @@ function LeaveList() {
                           Requested on {formatDate(request.requestDate)}
                         </div>
                       </div>
-                      
+
                       <div className="mt-2">
                         <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
                           {request.reason}
@@ -180,13 +210,13 @@ function LeaveList() {
                 Review the complete request information
               </SheetDescription>
             </SheetHeader>
-            
+
             <div className="space-y-5 px-4">
               <div>
                 <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Employee</h3>
                 <p className="text-base text-slate-900 dark:text-white">{selectedRequest.employeeName} ({selectedRequest.employeeId})</p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">From Date</h3>
@@ -197,36 +227,36 @@ function LeaveList() {
                   <p className="text-base text-slate-900 dark:text-white">{formatDate(selectedRequest.toDate)}</p>
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Total Days</h3>
                 <p className="text-base text-slate-900 dark:text-white">{selectedRequest.totalDays} days</p>
               </div>
-              
+
               <div>
                 <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Status</h3>
                 <div className="mt-1">{getStatusBadge(selectedRequest.status)}</div>
               </div>
-              
+
               <div>
                 <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Reason</h3>
                 <p className="text-base mt-1 leading-relaxed whitespace-pre-line text-slate-900 dark:text-white">{selectedRequest.reason}</p>
               </div>
             </div>
-            
+
             <SheetFooter className="sm:justify-between mt-4 px-2">
               {selectedRequest.status === 'pending' && (
                 <>
                   <Button 
                     variant="destructive" 
-                    onClick={() => handleDeny(selectedRequest.id)}
+                    onClick={() => handleDeny(selectedRequest._id)}
                     className="gap-1"
                   >
                     <XCircle className="h-4 w-4" />
                     Deny
                   </Button>
                   <Button 
-                    onClick={() => handleApprove(selectedRequest.id)}
+                    onClick={() => handleApprove(selectedRequest._id)}
                     className="gap-1 bg-green-600 hover:bg-green-700 text-white"
                   >
                     <CheckCircle2 className="h-4 w-4" />
@@ -244,7 +274,7 @@ function LeaveList() {
         </Sheet>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default LeaveList
+export default LeaveRequestList;

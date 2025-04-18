@@ -17,10 +17,27 @@ import UpdateJob from "@/components/manager/updateJob";
 import JobApplications from "@/components/manager/jobApplications";
 import Footer from "@/components/Footer";
 import Message from "@/components/manager/message";
+import {useNavigate} from "react-router-dom";
+import {jwtDecode} from "jwt-decode";
 // Importing the components for each section
 
 export default function Manager() {
   const [activeComponent, setActiveComponent] = React.useState("Dashboard");
+  const navigate=useNavigate();
+  React.useEffect(()=>{
+    
+    const token=localStorage.getItem('token');
+    if(token){
+      const user=jwtDecode(token);
+      if(user.role!=="HR")
+      {
+        navigate("/error")
+      }
+    }else(
+      navigate("/error")
+    )
+
+  })
 
   // Function to render the active component
   const renderComponent = () => {

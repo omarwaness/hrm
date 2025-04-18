@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import { Card, CardContent } from "@/components/ui/card"; // Assuming Card is installed
 import { Button } from "@/components/ui/button";
 import {
@@ -11,46 +11,49 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // Import AlertDialog components
+} from "@/components/ui/alert-dialog"; 
+import Loading from "../Loading";
 import { Trash2 } from "lucide-react";
 
-const initialEmployees = [
-  {
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "123-456-7890",
-  },
-  {
-    id: 2,
-    firstName: "Jane",
-    lastName: "Smith",
-    email: "jane.smith@example.com",
-    phone: "987-654-3210",
-  },
-  // Add more employees if needed for testing
-  {
-    id: 3,
-    firstName: "Peter",
-    lastName: "Jones",
-    email: "peter.jones@example.com",
-    phone: "555-123-4567",
-  },
-];
-
 export default function EmployeeList() {
-  const [employees, setEmployees] = useState(initialEmployees);
+  const [isLoading,setIsLoading]=useState(false)
+  const [employees, setEmployees] = useState([]);
+  const initialEmployees = async () => {
+    
+   setIsLoading(true)
+    try {
+      const res = await fetch('http://localhost:5000/api/user/');
+      
+      const data = await res.json();
+      setEmployees(data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }finally{
+      setIsLoading(false)
+    }
+  };
+  
+  useEffect(() => {
+    initialEmployees();
+  }, []);
+  
 
   // Simplified delete function, accepts the ID directly
-  const handleDeleteEmployee = (idToDelete) => {
-    setEmployees((prevEmployees) =>
-      prevEmployees.filter((employee) => employee.id !== idToDelete)
-    );
-    // Optional: Add a notification/toast message here confirming deletion
-    console.log(`Employee with ID ${idToDelete} deleted.`);
-  };
-
+  const handleDeleteEmployee = async (idToDelete) =>  { 
+    console.log('cc')
+  try {
+    const res = await fetch(`http://localhost:5000/api/user/${idToDelete}`, {
+      method: 'DELETE',
+    });
+    
+    if (res.ok) {
+      console.log('delted')
+    }
+  } catch(err) {
+    console.log(err)
+  }}
+  if(isLoading)
+    return <Loading />
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
@@ -59,7 +62,7 @@ export default function EmployeeList() {
         <div className="grid gap-4">
           {employees.map((employee) => (
             <Card key={employee.id} className="relative">
-              {/* AlertDialog wraps the trigger and content */}
+              {}
               <AlertDialog>
                 {/* The Button is now the trigger */}
                 <AlertDialogTrigger asChild>
@@ -90,7 +93,7 @@ export default function EmployeeList() {
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     {/* Action button performs the deletion */}
                     <AlertDialogAction
-                      onClick={() => handleDeleteEmployee(employee.id)} // Call delete handler with the specific employee's ID
+                      onClick={() => handleDeleteEmployee(employee._id)} // Call delete handler with the specific employee's ID
                       className="bg-red-600 hover:bg-red-700" // Use destructive variant styling often associated with delete
                       // or use variant="destructive" if your Button component supports it directly in AlertDialogAction
                     >
@@ -116,7 +119,7 @@ export default function EmployeeList() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-500 dark:text-slate-400">Phone</p>
-                  <p className="font-medium text-slate-900 dark:text-white">{employee.phone}</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{employee.phoneNumber}</p>
                 </div>
               </CardContent>
             </Card>

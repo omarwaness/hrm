@@ -10,33 +10,64 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-
+import {jwtDecode} from 'jwt-decode'
+import Loading from "../Loading"
 export default function LeaveRequest() {
   const [fromDate, setFromDate] = useState()
   const [toDate, setToDate] = useState()
   const [reason, setReason] = useState("")
-
-  const handleSubmit = (e) => {
+const [isLoading,setIsLoading]=useState(false)
+  const handleSubmit =async (e) => {
     e.preventDefault()
+    setIsLoading(true)
+    const token = localStorage.getItem('token');
+    const decoded = jwtDecode(token);
+    const sender= decoded.email;
+    try {
+      const response = await fetch("http://localhost:5000/api/leave/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({sender,fromDate, toDate,reason }),
+      });
+    
+      if (!response.ok) {
 
+        const errorData = await response.json();
+        alert(`Error: ${errorData.message || response.statusText}`);
+        setIsLoading(false)
+        return;
+      }
+  
+      const data = await response.json();
+      console.log("Message submitted:", data);
+  
+    } catch (err) {
+      alert(`Network error: ${err.message}`);
+    }
+
+   
     if (!fromDate || !toDate) {
       alert("Please select both from and to dates.")
+      setIsLoading(false)
       return
     }
 
     if (!reason.trim()) {
       alert("Please provide a reason for your leave request.")
+      setIsLoading(false)
       return
     }
 
     console.log({ fromDate, toDate, reason })
-    alert("Leave request submitted!")
+    
 
     setFromDate(undefined)
     setToDate(undefined)
     setReason("")
+    setIsLoading(false)
   }
-
+if (isLoading){return <Loading/>    }
   return (
     <div className="flex min-h-screen flex-col p-4">
       <div className="mx-auto w-full max-w-3xl space-y-6 py-10">

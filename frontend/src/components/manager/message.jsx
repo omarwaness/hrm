@@ -3,20 +3,43 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
+import {jwtDecode} from 'jwt-decode'
 export default function Message() {
   const [email, setEmail] = useState("");
   const [content, setContent] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Message submitted:", { email, content });
+    const token = localStorage.getItem('token');
 
-    // Clear form (optional)
-    setEmail("");
-    setContent("");
+    const decoded = jwtDecode(token);
+    const sender= decoded.email;
+    const reciever=e.target.email.value;
+    const content=e.target.content.value;
+    console.log(content)
+    
+  
+    try {
+      const response = await fetch("http://localhost:5000/api/message/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({sender, reciever, content }),
+      });
+    
+      if (!response.ok) {
 
-    // Optionally add toast/alert/notification here
+        const errorData = await response.json();
+        alert(`Error: ${errorData.message || response.statusText}`);
+        return;
+      }
+  
+      const data = await response.json();
+      console.log("Message submitted:", data);
+  
+    } catch (err) {
+      alert(`Network error: ${err.message}`);
+    }
   };
 
   return (
