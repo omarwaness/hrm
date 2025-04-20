@@ -39,17 +39,19 @@ router.delete("/:id", async (req, res) => {
         res.status(500).json({ message: err.message })
     }
 });
-router.get('/:email',async (req,res)=>{
-    try{
-        const email=req.params.email
-        
-        const messages=await Message.find({reciever:email});
-        res.status(200).json(messages)
-    }catch{
-        res.status(500).json({messge:err.message})
-    }
-})
 
+router.get('/:email', async (req, res) => {
+    try {
+      const email = req.params.email;
+  
+      const messages = await Message.find({ reciever: email }).sort({ createdAt: -1 });
+  
+      res.status(200).json(messages);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+});
+  
 
 module.exports = router
 

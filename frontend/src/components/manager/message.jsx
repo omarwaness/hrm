@@ -3,40 +3,40 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {jwtDecode} from 'jwt-decode'
+import { jwtDecode } from "jwt-decode";
+
 export default function Message() {
   const [email, setEmail] = useState("");
   const [content, setContent] = useState("");
+  const [confirmationMessage, setConfirmationMessage] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
-
+    const token = localStorage.getItem("token");
     const decoded = jwtDecode(token);
-    const sender= decoded.email;
-    const reciever=e.target.email.value;
-    const content=e.target.content.value;
-    console.log(content)
-    
-  
+    const sender = decoded.email;
+    const reciever = e.target.email.value;
+    const content = e.target.content.value;
+
     try {
       const response = await fetch("http://localhost:5000/api/message/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({sender, reciever, content }),
+        body: JSON.stringify({ sender, reciever, content }),
       });
-    
-      if (!response.ok) {
 
+      if (!response.ok) {
         const errorData = await response.json();
         alert(`Error: ${errorData.message || response.statusText}`);
         return;
       }
-  
+
       const data = await response.json();
       console.log("Message submitted:", data);
-  
+      setConfirmationMessage("✅ Message sent successfully!");
+      setEmail("");
+      setContent("");
     } catch (err) {
       alert(`Network error: ${err.message}`);
     }
@@ -77,6 +77,9 @@ export default function Message() {
             <Button type="submit" className="w-full">
               Submit
             </Button>
+            {confirmationMessage && (
+              <p className="text-green-600 text-sm mt-2 text-center">{confirmationMessage}</p>
+            )}
           </form>
         </CardContent>
       </Card>
