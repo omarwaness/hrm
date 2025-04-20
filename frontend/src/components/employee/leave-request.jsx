@@ -10,64 +10,75 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import {jwtDecode} from 'jwt-decode'
+import { jwtDecode } from "jwt-decode"
 import Loading from "../Loading"
+
 export default function LeaveRequest() {
   const [fromDate, setFromDate] = useState()
   const [toDate, setToDate] = useState()
   const [reason, setReason] = useState("")
-const [isLoading,setIsLoading]=useState(false)
-  const handleSubmit =async (e) => {
+  const [isLoading, setIsLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState("")
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setSuccessMessage("")
     setIsLoading(true)
-    const token = localStorage.getItem('token');
-    const decoded = jwtDecode(token);
-    const sender= decoded.email;
-    try {
-      const response = await fetch("http://localhost:5000/api/leave/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({sender,fromDate, toDate,reason }),
-      });
-    
-      if (!response.ok) {
-
-        const errorData = await response.json();
-        alert(`Error: ${errorData.message || response.statusText}`);
-        setIsLoading(false)
-        return;
-      }
   
-      const data = await response.json();
-      console.log("Message submitted:", data);
+    const token = localStorage.getItem("token")
+    const decoded = jwtDecode(token)
+    const sender = decoded.email
   
-    } catch (err) {
-      alert(`Network error: ${err.message}`);
-    }
-
-   
     if (!fromDate || !toDate) {
       alert("Please select both from and to dates.")
       setIsLoading(false)
       return
     }
-
+  
+    if (toDate < fromDate) {
+      alert("The end date cannot be earlier than the start date.")
+      setIsLoading(false)
+      return
+    }
+  
     if (!reason.trim()) {
       alert("Please provide a reason for your leave request.")
       setIsLoading(false)
       return
     }
-
-    console.log({ fromDate, toDate, reason })
-    
-
-    setFromDate(undefined)
-    setToDate(undefined)
-    setReason("")
+  
+    try {
+      const response = await fetch("http://localhost:5000/api/leave/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ sender, fromDate, toDate, reason }),
+      })
+  
+      if (!response.ok) {
+        const errorData = await response.json()
+        alert(`Error: ${errorData.message || response.statusText}`)
+        setIsLoading(false)
+        return
+      }
+  
+      const data = await response.json()
+      console.log("Message submitted:", data)
+  
+      setSuccessMessage("Leave request submitted successfully ✅")
+      setFromDate(undefined)
+      setToDate(undefined)
+      setReason("")
+    } catch (err) {
+      alert(`Network error: ${err.message}`)
+    }
+  
     setIsLoading(false)
   }
-if (isLoading){return <Loading/>    }
+  
+
+  if (isLoading) return <Loading />
+
   return (
     <div className="flex min-h-screen flex-col p-4">
       <div className="mx-auto w-full max-w-3xl space-y-6 py-10">
@@ -75,6 +86,12 @@ if (isLoading){return <Loading/>    }
           <h1 className="text-3xl font-bold tracking-tight">Leave Request</h1>
           <p className="text-muted-foreground">Submit your leave dates and reason below.</p>
         </div>
+
+        {successMessage && (
+          <div className="rounded-md bg-green-100 text-green-800 px-4 py-3 text-center font-medium shadow">
+            {successMessage}
+          </div>
+        )}
 
         <Card>
           <CardHeader>

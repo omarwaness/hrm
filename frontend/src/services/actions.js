@@ -1,30 +1,45 @@
 "use server"
+
 import { jwtDecode } from "jwt-decode"
-// This is a mock database function
-// In a real application, you would connect to your database here
-export async function getEmployeeContract() {
+
+export async function getEmployeeContract(token) {
   // Simulate database fetch delay
   await new Promise((resolve) => setTimeout(resolve, 1500))
 
-  // Mock contract data
-  const user=jwtDecode(localStorage.getItem('token'))
+  if (!token) {
+    throw new Error("Missing authentication token")
+  }
+
+  const decoded = jwtDecode(token)
+
+  const userData = {
+    firstName: decoded.firstName || "",
+    lastName: decoded.lastName || "",
+    email: decoded.email || "",
+    phone: decoded.phoneNumber || "",
+    joinDate: decoded.createAt
+      ? new Date(decoded.createAt.replace(/(\+\d{2}):(\d{2})$/, '+$1$2'))
+      : new Date(),
+    role: decoded.role || "",
+  }
+
   return {
-    id: user.id,
+    id: decoded.id,
     title: "Employment Contract",
-    position: user.role,
+    position: userData.role,
     salary: "$85,000 per annum",
-    startDate: new Date(user.createAt).toLocaleDateString()
-    ,
+    startDate: userData.joinDate.toLocaleDateString(),
     endDate: "",
+    userData,
     content: `EMPLOYMENT AGREEMENT
 
-This Employment Agreement (the "Agreement") is made and effective as of January 15, 2023, by and between Acme Corporation ("Employer") and John Doe ("Employee").
+This Employment Agreement (the "Agreement") is made and effective as of ${userData.joinDate.toLocaleDateString()}, by and between Acme Corporation ("Employer") and ${userData.firstName} ${userData.lastName} ("Employee").
 
 1. EMPLOYMENT
-Employer agrees to employ Employee as a Software Developer. Employee accepts employment with Employer on the terms and conditions set forth in this Agreement.
+Employer agrees to employ Employee as a ${userData.role}. Employee accepts employment with Employer on the terms and conditions set forth in this Agreement.
 
 2. TERM
-The term of this Agreement shall begin on January 15, 2023 and shall continue until terminated in accordance with the provisions of this Agreement.
+The term of this Agreement shall begin on ${userData.joinDate.toLocaleDateString()} and shall continue until terminated in accordance with the provisions of this Agreement.
 
 3. COMPENSATION
 As compensation for the services provided by Employee under this Agreement, Employer will pay Employee an annual salary of $85,000, payable in accordance with Employer's normal payroll procedures.
@@ -44,4 +59,3 @@ This Agreement shall be governed by and construed in accordance with the laws of
 IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first above written.`,
   }
 }
-

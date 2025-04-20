@@ -78,7 +78,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handelSubmit} onReset={()=>setAction("reset")} action="/users/login">
+          <form onSubmit={handleSubmit} onReset={()=>setAction("reset")} action="/users/login">
             <div className="grid gap-6">
               {errorMessage && ( // Display the error message
                 <Alert variant="destructive">

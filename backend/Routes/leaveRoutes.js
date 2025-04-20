@@ -1,4 +1,4 @@
-/*const express = require("express");
+const express = require("express");
 const Leave = require("../models/Leaves");
 
 const router = express.Router();
@@ -82,42 +82,5 @@ router.get("/:email", async (req, res) => {
   }
 })
 
-module.exports = router*/
-const express=require("express");
-const Leave=require("../models/Leaves");
-const router=express.Router();
 
-router.get('/',async(req,res)=>{
-  try{
-    const leaves=await Leave.find().sort({createdAt:-1})
-    res.status(200).json(leaves);
-
-  }catch(err)
-  {
-    res.status(500).json({messsage:err.message})
-  }
-})
-
-router.post("/create", async (req, res) => {
-  try {
-    const { sender, fromDate, toDate, reason } = req.body
-
-    const newLeave = new Leave({ sender, fromDate, toDate, reason })
-    await newLeave.save()
-
-    res.status(201).json(newLeave)
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-});
-router.get("/", async (req, res) => {
-  try {
-    const leaves = await Leave.find().sort({ createdAt: -1 })
-    res.status(200).json(leaves);
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-})
-
-
-module.exports=router;
+module.exports=router
