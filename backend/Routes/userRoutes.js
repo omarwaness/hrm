@@ -3,17 +3,18 @@ const User=require("../models/Users");
 const jwt=require('jsonwebtoken')
 const router=express.Router();
 
-router.delete("/:_id",async(req,res)=>{
-   
-    try{
-        await User.findByIdAndDelete(req.params._id);
-       res.status(200).json({message:"User sucefuly deleted"})
-       
-    
-    }catch(error){
-        res.status(500).json({message:error.message});
+// DELETE: Delete a user by _id
+router.delete("/:_id", async (req, res) => {
+    try {
+      // Find the user by _id and delete
+      await User.findByIdAndDelete(req.params._id);
+      res.status(200).json({ message: "User successfully deleted" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-})
+  });
+  
+
 function generateToken(id,firstName,lastName,email,phoneNumber,role,createdAt){
     const payload={
         id:id,
@@ -29,6 +30,7 @@ function generateToken(id,firstName,lastName,email,phoneNumber,role,createdAt){
     return token
 
 }
+
 router.put('/:_id',async(req,res)=>{
     try{
         
@@ -74,6 +76,20 @@ router.get("/:email", async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 })
+
+// GET all users with role 'employee'
+router.get("/role/employee", async (req, res) => {
+    try {
+      const employees = await User.find({ role: "Employee" }).select(
+        "firstName lastName phoneNumber email role createdAt"
+      );
+  
+      res.status(200).json(employees);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+});
+  
 
 
 
