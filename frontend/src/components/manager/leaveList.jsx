@@ -230,7 +230,7 @@ const LeaveRequestList = () => {
 
               <div>
                 <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Total Days</h3>
-                <p className="text-base text-slate-900 dark:text-white">{selectedRequest.totalDays} days</p>
+                <p className="text-base text-slate-900 dark:text-white">{selectedRequest.toDate -selectedRequest.toDate } days</p>
               </div>
 
               <div>

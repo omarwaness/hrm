@@ -62,7 +62,7 @@ export function CreateAccountForm({
       alert("Error: " + error.message);  
     }
   };
-
+  const token=localStorage.getItem('token')
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -131,22 +131,24 @@ export function CreateAccountForm({
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       required
                     />
-                  </div>
+                  </div>{token && (
                   <div>
                     <Label htmlFor="role">Role</Label><br></br>
-                    <Select value={role} onValueChange={handleRoleChange}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select a Role" />
-                      </SelectTrigger>
-                      <SelectContent >
-                        <SelectGroup>
-                          <SelectLabel>Role</SelectLabel>
-                          <SelectItem value="HR">HR</SelectItem>
-                          <SelectItem value="Employee">Employee</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    
+        <Select value={role} onValueChange={handleRoleChange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select a Role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Role</SelectLabel>
+              <SelectItem value="HR">HR</SelectItem>
+              <SelectItem value="Employee">Employee</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      
+                  </div>)}
                 </div>
               </div>
 

@@ -18,7 +18,8 @@ const MessageSchema=new mongoose.Schema(
   {
     sender:{type:String,required:true},
     reciever:{type:String,require:true},
-    content:{type:String,require:true}
+    content:{type:String,require:true},
+    stared:{type:Boolean,default:false}
   },{timestamps:true}
 )
 module.exports=mongoose.model('Message',MessageSchema)

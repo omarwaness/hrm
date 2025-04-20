@@ -15,18 +15,19 @@ import Loading  from "./components/Loading"
 import PasswordReset from "./components/reset"
 
 
-
 // This is new
 function App() {
   return (
     <Router>
       <Routes>
+        
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<Page />} />
         <Route path="/admin" element={<Admin/>} />
         <Route path="/manager" element={<Manager/>} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/create-account" element={<CreateAccount />} />
         <Route path="/signup" element={< CreateAccount/>} />
         <Route path="/forgot-password-page" element={<ForgotPassword />} />
         <Route path="/reset/:token" element={<PasswordReset />} />

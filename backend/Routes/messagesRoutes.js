@@ -42,10 +42,10 @@ router.delete("/:id", async (req, res) => {
 router.get('/:email',async (req,res)=>{
     try{
         const email=req.params.email
-        
+    
         const messages=await Message.find({reciever:email});
         res.status(200).json(messages)
-    }catch{
+    }catch(err){
         res.status(500).json({messge:err.message})
     }
 })
