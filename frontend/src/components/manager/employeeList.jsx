@@ -14,18 +14,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import Loading from "../Loading";
 import { Trash2 } from "lucide-react";
-import { getEmployees } from "@/services/userService"; // Ensure this path is correct
-import axios from "axios"; // Import Axios
 
 export default function EmployeeList() {
   const [isLoading, setIsLoading] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [refresh, setRefresh] = useState(false);
+
+  // Fetch employees from API
   const initialEmployees = async () => {
-    
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/user/');
+      const res = await fetch("http://localhost:5000/api/user/");
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setEmployees(data);
     } catch (error) {
@@ -38,28 +38,37 @@ export default function EmployeeList() {
   useEffect(() => {
     initialEmployees();
   }, [refresh]);
-  
 
-  // Simplified delete function, accepts the ID directly
-  const handleDeleteEmployee = async (idToDelete) =>  { 
-    console.log('cc')
-  try {
-    const res = await fetch(`http://localhost:5000/api/user/${idToDelete}`, {
-      method: 'DELETE',
-    });
-    
-    if (res.ok) {
-      console.log('delted')
-      setRefresh(prev => !prev);
-  }, []);
+  // Delete employee by ID
+  const handleDeleteEmployee = async (idToDelete) => { 
+    console.log("Deleting employee with ID:", idToDelete);
+    try {
+      const res = await fetch(`http://localhost:5000/api/user/${idToDelete}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        console.log("Deleted successfully");
+        setRefresh((prev) => !prev); // Trigger refresh to reload employees
+      } else {
+        console.error("Failed to delete employee");
+      }
+    } catch (error) {
+      console.error("Error deleting employee:", error);
+    }
+  };
 
   if (isLoading) return <Loading />;
 
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white">Employee Directory</h1>
-        <p className="text-base text-slate-600 dark:text-slate-200 mb-6">View and manage employee records</p>
+        <h1 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white">
+          Employee Directory
+        </h1>
+        <p className="text-base text-slate-600 dark:text-slate-200 mb-6">
+          View and manage employee records
+        </p>
         <div className="grid gap-4">
           {employees.map((employee) => (
             <Card key={employee._id} className="relative">
@@ -123,3 +132,4 @@ export default function EmployeeList() {
     </div>
   );
 }
+  
