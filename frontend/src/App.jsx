@@ -10,6 +10,8 @@ import Admin from "./pages/admin"
 import Manager from "./pages/manager"
 import AboutUs from "./pages/Aboutus"
 import LandingPage from "./pages/landingPage"
+import Error from "./pages/Error"
+import Loading  from "./components/Loading"
 import PasswordReset from "./components/reset"
 
 
@@ -18,22 +20,27 @@ function App() {
   return (
     <Router>
       <Routes>
+        
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<Page />} />
         <Route path="/admin" element={<Admin/>} />
         <Route path="/manager" element={<Manager/>} />
         <Route path="/employee" element={<Employee />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/create-account" element={<CreateAccount />} />
         <Route path="/signup" element={< CreateAccount/>} />
         <Route path="/forgot-password-page" element={<ForgotPassword />} />
         <Route path="/reset/:token" element={<PasswordReset />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/settings" element={<Settings/>} />
         <Route path="/about" element={<AboutUs/>}/>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/error" element={<Error/>}/>
+        <Route path="/loading" element={<Loading/>}/>
+        <Route path="*" element={<Navigate to="/" replace />} /> 
       </Routes>
     </Router>
   )
 }
 
 export default App
+ 

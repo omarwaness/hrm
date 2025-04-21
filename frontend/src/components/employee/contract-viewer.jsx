@@ -1,5 +1,6 @@
 "use client"
 
+import { jsPDF } from "jspdf"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,7 +16,8 @@ export default function ContractViewer() {
   useEffect(() => {
     async function loadContract() {
       try {
-        const data = await getEmployeeContract()
+        const token = localStorage.getItem("token") // Get token from localStorage
+        const data = await getEmployeeContract(token) // Pass token to the server action
         setContract(data)
       } catch (error) {
         console.error("Failed to fetch contract:", error)
@@ -23,9 +25,15 @@ export default function ContractViewer() {
         setLoading(false)
       }
     }
-
+  
     loadContract()
   }, [])
+  
+  function handleDownload() {
+    const doc = new jsPDF()
+    doc.text(contract.content, 10, 10)
+    doc.save("employment-contract.pdf")
+  }
 
   return (
     <div className="max-w-3xl mx-auto p-2">
@@ -77,7 +85,7 @@ export default function ContractViewer() {
           )}
         </CardContent>
         {contract && !loading && (
-          <CardFooter className="flex justify-end">
+          <CardFooter onClick={handleDownload} className="flex justify-end">
             <Button className="flex items-center gap-2">
               <Download className="h-4 w-4" />
               Download PDF

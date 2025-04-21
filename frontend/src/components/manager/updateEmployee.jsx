@@ -14,11 +14,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle } from 'lucide-react';
+import Loading from "../Loading";
 
 function UpdateEmployee() {
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [employees, setEmployees] = useState([]);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -32,19 +35,23 @@ function UpdateEmployee() {
   const [errors, setErrors] = useState({});
   const [isSearching, setIsSearching] = useState(false);
 
-  // Mock employee data - would be replaced with API calls in production
-  const mockEmployees = [
-    { id: '1', firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com', phone: '123-456-7890', role: 'developer' },
-    { id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@example.com', phone: '987-654-3210', role: 'designer' },
-    { id: '3', firstName: 'Mike', lastName: 'Johnson', email: 'mike.johnson@example.com', phone: '555-123-4567', role: 'manager' },
-    { id: '4', firstName: 'Sarah', lastName: 'Williams', email: 'sarah.williams@example.com', phone: '444-333-2222', role: 'hr' },
-    { id: '5', firstName: 'David', lastName: 'Brown', email: 'david.brown@example.com', phone: '111-222-3333', role: 'marketing' },
-    { id: '6', firstName: 'Emily', lastName: 'Davis', email: 'emily.davis@example.com', phone: '777-888-9999', role: 'sales' },
-    { id: '7', firstName: 'Robert', lastName: 'Miller', email: 'robert.miller@example.com', phone: '555-444-3333', role: 'developer' },
-    { id: '8', firstName: 'Jennifer', lastName: 'Wilson', email: 'jennifer.wilson@example.com', phone: '222-333-4444', role: 'designer' },
-    { id: '9', firstName: 'Michael', lastName: 'Taylor', email: 'michael.taylor@example.com', phone: '666-777-8888', role: 'manager' },
-    { id: '10', firstName: 'Lisa', lastName: 'Anderson', email: 'lisa.anderson@example.com', phone: '999-888-7777', role: 'hr' }
-  ];
+  // Fetch employees
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch('http://localhost:5000/api/user/');
+        const data = await res.json();
+        setEmployees(data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchEmployees();
+  }, []);
 
   // Filter employees as user types
   useEffect(() => {
@@ -53,14 +60,14 @@ function UpdateEmployee() {
       setIsSearching(false);
     } else {
       setIsSearching(true);
-      const filteredEmployees = mockEmployees.filter(emp => 
+      const filteredEmployees = employees.filter(emp => 
         emp.firstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
         emp.lastName.toLowerCase().includes(searchQuery.toLowerCase()) || 
         emp.email.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setSearchResults(filteredEmployees);
     }
-  }, [searchQuery]);
+  }, [searchQuery, employees]);
 
   // The form submission is now just a fallback
   const handleSearch = (e) => {
@@ -73,7 +80,7 @@ function UpdateEmployee() {
     setFormData({
       firstName: employee.firstName,
       lastName: employee.lastName,
-      phone: employee.phone,
+      phone: employee.phoneNumber || '',
       role: employee.role,
       email: employee.email
     });
@@ -111,7 +118,7 @@ function UpdateEmployee() {
     }
   };
 
-  const validate = () => {
+   const validate = () => {
     const newErrors = {};
     
     if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
@@ -127,38 +134,65 @@ function UpdateEmployee() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validate()) return;
+    console.log(selectedEmployee._id) 
     
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       console.log('Employee data updated:', formData);
       setShowSuccess(true);
-      setIsSubmitting(false);
       
       // Hide success message after 3 seconds
       setTimeout(() => {
         setShowSuccess(false);
       }, 3000);
-    }, 1000);
+      const res = await fetch(`http://localhost:5000/api/user/${selectedEmployee._id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ 
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phoneNumber: formData.phone, 
+          role: selectedEmployee.role,
+          createdAt: selectedEmployee.createdAt
+        }), 
+        credentials: 'include',
+      })
+    } catch (error) {
+      console.error("Error updating employee:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Get all employees in alphabetical order by last name then first name
   const getAllEmployeesSorted = () => {
-    return [...mockEmployees].sort((a, b) => {
+    return [...employees].sort((a, b) => {
+      // Handle cases where lastName might be undefined
+      const lastNameA = a.lastName || '';
+      const lastNameB = b.lastName || '';
+      
       // First sort by last name
-      const lastNameComparison = a.lastName.localeCompare(b.lastName);
+      const lastNameComparison = lastNameA.localeCompare(lastNameB);
+      
       // If last names are the same, sort by first name
       if (lastNameComparison === 0) {
-        return a.firstName.localeCompare(b.firstName);
+        const firstNameA = a.firstName || '';
+        const firstNameB = b.firstName || '';
+        return firstNameA.localeCompare(firstNameB);
       }
       return lastNameComparison;
     });
   };
+
+  if(isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div className="w-full">
@@ -195,7 +229,7 @@ function UpdateEmployee() {
                 <div className="divide-y">
                   {searchResults.map((emp) => (
                     <div 
-                      key={emp.id} 
+                      key={emp._id} 
                       className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex justify-between items-center"
                       onClick={() => handleSelectEmployee(emp)}
                     >
@@ -221,7 +255,7 @@ function UpdateEmployee() {
               <div className="divide-y max-h-60 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
                 {getAllEmployeesSorted().map((emp) => (
                   <div 
-                    key={emp.id} 
+                    key={emp._id} 
                     className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex justify-between items-center"
                     onClick={() => handleSelectEmployee(emp)}
                   >
@@ -340,12 +374,10 @@ function UpdateEmployee() {
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent className="text-base">
-                    <SelectItem value="developer">Developer</SelectItem>
-                    <SelectItem value="designer">Designer</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="hr">HR</SelectItem>
-                    <SelectItem value="marketing">Marketing</SelectItem>
-                    <SelectItem value="sales">Sales</SelectItem>
+                    <SelectItem value="Admin">Admin</SelectItem>
+                    <SelectItem value="HR">HR</SelectItem>
+                    <SelectItem value="Employee">Employee</SelectItem>
+                    <SelectItem value="Candidate">Candidate</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.role && (
@@ -358,6 +390,7 @@ function UpdateEmployee() {
                   type="submit" 
                   className="h-12 text-base font-semibold bg-primary hover:bg-primary/90 flex-1" 
                   disabled={isSubmitting}
+                  
                 >
                   {isSubmitting ? "Updating..." : "Update Employee"}
                 </Button>

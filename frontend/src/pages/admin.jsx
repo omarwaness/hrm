@@ -11,10 +11,25 @@ import AddEmployee from "@/components/manager/addEmployee";
 import UpdateEmployee from "@/components/manager/updateEmployee";
 import GenerateReport from "@/components/manager/generateReport";
 import SavedReports from "@/components/manager/savedReports";
+import {useNavigate} from 'react-router-dom';
+import {jwtDecode} from 'jwt-decode'
 // Importing the components for each section
 
 export default function Admin() {
+  const navigate=useNavigate();
   const [activeComponent, setActiveComponent] = React.useState("Dashboard");
+  React.useEffect(()=>{
+    const token=localStorage.getItem('token');
+    if(token){
+      const user=jwtDecode(token);
+      if(user.role!=='Admin'){
+        navigate('/error')
+      }
+    }
+    else{
+      navigate('/error')
+    }
+  })
 
   // Function to render the active component
   const renderComponent = () => {

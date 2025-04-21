@@ -71,10 +71,6 @@ export function ManagerSidebar({ setActiveComponent, ...props }) {
         </Button>
       </SidebarContent>
       <SidebarFooter>
-        <Button variant="outline" className="justify-start w-full text-slate-800 dark:text-slate-200">
-          <Settings className="mr-2 h-5 w-5" />
-          Settings
-        </Button>
       </SidebarFooter>
     </Sidebar>
   );

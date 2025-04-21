@@ -27,10 +27,6 @@ export function EmployeeSidebar({ setActiveComponent, ...props }) {
         </Button>
       </SidebarContent>
       <SidebarFooter>
-        <Button variant="outline" className="justify-start w-full">
-          <Settings className="mr-2 h-5 w-5" />
-          Settings
-        </Button>
       </SidebarFooter>
     </Sidebar>
   );

@@ -1,8 +1,8 @@
-import { AlignJustify, Sun, Moon, LogOut, User } from "lucide-react";
+import { AlignJustify, Sun, Moon, LogOut, User, Mail, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, createContext, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   DropdownMenu,
@@ -12,6 +12,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+// Créer un contexte pour gérer les notifications à travers l'application
+export const NotificationContext = createContext({
+  unreadCount: 0,
+  setUnreadCount: () => {},
+  hasNewMessage: false,
+  setHasNewMessage: () => {},
+});
+
+export const useNotifications = () => useContext(NotificationContext);
 
 const getSystemTheme = () => {
   if (typeof window !== 'undefined') {
@@ -43,6 +53,7 @@ export function SiteHeader({ setActiveComponent }) {
   const { toggleSidebar } = useSidebar() || { toggleSidebar: null };
   const [theme, setTheme] = useState("light");
   const navigate = useNavigate();
+  const { unreadCount, hasNewMessage, setHasNewMessage } = useNotifications();
 
   useEffect(() => {
     const initialTheme = getInitialTheme();
@@ -63,6 +74,16 @@ export function SiteHeader({ setActiveComponent }) {
       return () => mediaQuery.removeEventListener("change", handleChange);
     }
   }, []);
+
+  // Réinitialiser l'indicateur de nouveau message après un délai
+  useEffect(() => {
+    if (hasNewMessage) {
+      const timer = setTimeout(() => {
+        setHasNewMessage(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasNewMessage, setHasNewMessage]);
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -89,9 +110,13 @@ export function SiteHeader({ setActiveComponent }) {
   const isAuthenticated = () => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem("token");
-      return token !== null;
+      return token;
     }
     return false;
+  };
+
+  const goToInbox = () => {
+    setActiveComponent("Inbox");
   };
 
   return (
@@ -114,11 +139,38 @@ export function SiteHeader({ setActiveComponent }) {
 
         <div className="hidden md:flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Dashboard")}>Dashboard</Button>
-          <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Inbox")}>Inbox</Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={goToInbox}
+            className="relative"
+          >
+            Inbox
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => setActiveComponent("Account")}>Account</Button>
         </div>
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Bouton de notification pour les appareils mobiles */}
+          <Button 
+            className="relative md:hidden h-8 w-8" 
+            variant="ghost" 
+            size="icon"
+            onClick={goToInbox}
+          >
+            <Bell className={`h-5 w-5 ${hasNewMessage ? 'text-blue-500' : ''}`} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
+          </Button>
+
           <Button className="h-8 w-8" variant="ghost" size="icon" onClick={toggleTheme}>
             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>

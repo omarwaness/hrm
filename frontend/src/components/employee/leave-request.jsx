@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 
@@ -10,32 +10,68 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { jwtDecode } from 'jwt-decode'
+
+import Loading from "../Loading"
 
 export default function LeaveRequest() {
   const [fromDate, setFromDate] = useState()
   const [toDate, setToDate] = useState()
   const [reason, setReason] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [status, setStatus] = useState({ type: null, message: "" })
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (status.type) {
+      const timer = setTimeout(() => setStatus({ type: null, message: "" }), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [status.type])
+
+  const handleSubmit = async (e) => {
+
     e.preventDefault()
+    setSuccessMessage("")
+    setIsLoading(true)
+    setStatus({ type: null, message: "" })
 
-    if (!fromDate || !toDate) {
-      alert("Please select both from and to dates.")
-      return
+    try {
+      if (!fromDate || !toDate) {
+        throw new Error("Please select both from and to dates.")
+      }
+
+      if (!reason.trim()) {
+        throw new Error("Please provide a reason for your leave request.")
+      }
+
+      const token = localStorage.getItem('token')
+      const decoded = jwtDecode(token)
+      const sender = decoded.email
+
+      const response = await fetch("http://localhost:5000/api/leave/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ sender, fromDate, toDate, reason }),
+      })
+
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to submit leave request")
+      }
+
+      setStatus({ type: 'success', message: 'Leave request submitted successfully!' })
+      setFromDate(undefined)
+      setToDate(undefined)
+      setReason("")
+    } catch (err) {
+      setStatus({ type: 'error', message: err.message })
+    } finally {
+      setIsLoading(false)
     }
 
-    if (!reason.trim()) {
-      alert("Please provide a reason for your leave request.")
-      return
-    }
-
-    console.log({ fromDate, toDate, reason })
-    alert("Leave request submitted!")
-
-    setFromDate(undefined)
-    setToDate(undefined)
-    setReason("")
-  }
+  if (isLoading) return <Loading />
 
   return (
     <div className="flex min-h-screen flex-col p-4">
@@ -45,12 +81,31 @@ export default function LeaveRequest() {
           <p className="text-muted-foreground">Submit your leave dates and reason below.</p>
         </div>
 
+        {successMessage && (
+          <div className="rounded-md bg-green-100 text-green-800 px-4 py-3 text-center font-medium shadow">
+            {successMessage}
+          </div>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Leave Details</CardTitle>
             <CardDescription>Choose your dates and fill in the reason for your leave.</CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Status Messages */}
+            {status.type === 'success' && (
+              <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                {status.message}
+              </div>
+            )}
+
+            {status.type === 'error' && (
+              <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                {status.message}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* From Date */}
@@ -74,7 +129,7 @@ export default function LeaveRequest() {
                         mode="single"
                         selected={fromDate}
                         onSelect={setFromDate}
-                        disabled={(date) => date < new Date()}
+                        disabled={(date) => date < toDate}
                         initialFocus
                       />
                     </PopoverContent>
@@ -102,7 +157,7 @@ export default function LeaveRequest() {
                         mode="single"
                         selected={toDate}
                         onSelect={setToDate}
-                        disabled={(date) => date < new Date()}
+                        disabled={(date) => date < fromDate}
                         initialFocus
                       />
                     </PopoverContent>
@@ -122,8 +177,19 @@ export default function LeaveRequest() {
                 />
               </div>
 
-              <Button type="submit" className="w-full">
-                Submit Request
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center">
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                    Submitting...
+                  </span>
+                ) : (
+                  'Submit Request'
+                )}
               </Button>
             </form>
           </CardContent>
@@ -131,4 +197,5 @@ export default function LeaveRequest() {
       </div>
     </div>
   )
+}
 }
