@@ -1,15 +1,39 @@
 const mongoose = require("mongoose");
-
 const UserSchema = new mongoose.Schema(
   {
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
-    phoneNumber: { type: Number, required: true },
-    role: { type: String, enum: ['Admin', 'HR', 'Employee', 'Conditate'], required: true },
+    firstName: {
+      type: String,
+      required: function () {
+        return !this.googleId;
+      },
+    },
+    lastName: {
+      type: String,
+      required: function () {
+        return !this.googleId;
+      },
+    },
+    phoneNumber: {
+      type: Number,
+      required: function () {
+        return !this.googleId;
+      },
+    },
+    password: {
+      type: String,
+      required: function () {
+        return !this.googleId;
+      },
+    },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    googleId: { type: String, unique: true },
+    role: {
+      type: String,
+      enum: ["Admin", "HR", "Employee", "Conditate"],
+      default: "Employee"
+    },
     
-    // 🔧 These were not being registered before — now they will be:
+    profilePicture: { type: String },
     confirmed: { type: Boolean, default: false },
     emailActivationToken: String,
     resetPasswordToken: String,
@@ -19,5 +43,4 @@ const UserSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
 module.exports = mongoose.model("User", UserSchema);
