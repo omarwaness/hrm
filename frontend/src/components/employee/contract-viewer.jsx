@@ -31,7 +31,7 @@ export default function ContractViewer() {
   
   function handleDownload() {
     const doc = new jsPDF()
-    doc.text(contract.content, 10, 10)
+    doc.text(contract.content, 20, 20)
     doc.save("employment-contract.pdf")
   }
 

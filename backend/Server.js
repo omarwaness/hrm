@@ -57,6 +57,7 @@ app.use("/api/leave", require("./Routes/leaveRoutes"));
 app.use("/api/user", require("./Routes/userRoutes"));
 app.use("/api/reports", require("./Routes/reportRoutes"));
 app.use("/api/resignation", require("./Routes/ResignationRoutes"));
+app.use("/api/ai", require("./Routes/chatRoutes"));
 
 // Make io available in routes/controllers
 app.set("io", io);
@@ -69,3 +70,4 @@ app.listen(PORT, '0.0.0.0', () => console.log(`REST API server listening on port
 server.listen(5001, "0.0.0.0", () => {
     console.log(`Socket.IO server listening on port 5001`);
 });
+
