@@ -30,14 +30,14 @@ export function LoginForm({
       case "HR":
         return "/manager";
       default:
-        return '/login'; // Fallback in case the role doesn't match
+        return '/login';
     }
   };
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const [errorMessage, setErrorMessage] = useState(null); // State for error message
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,11 +60,11 @@ export function LoginForm({
         console.log(user);
         navigate(render);
       } else {
-        setErrorMessage(data.message); // Set the error message from the API
+        setErrorMessage(data.message);
       }
     } catch (error) {
       console.error("Error in login is:", error);
-      setErrorMessage("An unexpected error occurred during login."); // Set a generic error message
+      setErrorMessage("An unexpected error occurred during login.");
     }
   };
 
@@ -80,7 +80,7 @@ export function LoginForm({
         <CardContent>
           <form onSubmit={handleSubmit} onReset={()=>setAction("reset")} action="/users/login">
             <div className="grid gap-6">
-              {errorMessage && ( // Display the error message
+              {errorMessage && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>Error</AlertTitle>
@@ -136,6 +136,16 @@ export function LoginForm({
                   Login
                 </Button>
               </div>
+              {/* Added "Create Account" link */}
+              <div className="text-center text-sm">
+                <span className="text-muted-foreground">Don't have an account? </span>
+                <Link
+                  to="/create-account"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  Create Account
+                </Link>
+              </div>
               <div className="text-muted-foreground *:[a]:hover:text-primary text-center text-xs text-balance *:[a]:underline *:[a]:underline-offset-4">
                 By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
                 and <a href="#">Privacy Policy</a>.
@@ -144,7 +154,6 @@ export function LoginForm({
           </form>
         </CardContent>
       </Card>
-
     </div>
   );
 }

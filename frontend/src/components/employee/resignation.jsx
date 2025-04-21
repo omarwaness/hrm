@@ -1,38 +1,34 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { format } from "date-fns"
-import { CalendarIcon, CheckCircle2 } from "lucide-react"
+import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { jwtDecode } from "jwt-decode"
+import Loading from "../Loading"
+import {io} from 'socket.io-client'
 
 export default function ResignationPage() {
+  const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  // Form state
   const [fullName, setFullName] = useState("")
   const [lastWorkingDay, setLastWorkingDay] = useState(undefined)
   const [reason, setReason] = useState("")
+  const [status, setStatus] = useState(null)
+  const [socket, setSocket] = useState(null)
 
-  // Validation state
   const [errors, setErrors] = useState({
     fullName: "",
     lastWorkingDay: "",
   })
 
-  // Form validation
   function validateForm() {
     const newErrors = {
       fullName: "",
@@ -55,16 +51,49 @@ export default function ResignationPage() {
     return isValid
   }
 
-  // Handle form submission
-  function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (validateForm()) {
-      console.log({
-        fullName,
-        lastWorkingDay,
-        reason,
+    if (!validateForm()) return
+
+    setIsLoading(true)
+
+    try {
+      const token = localStorage.getItem("token")
+      const decoded = jwtDecode(token)
+      const sender = decoded.email
+      const firstName = fullName
+      const lastDay = lastWorkingDay
+
+      const response = await fetch("http://localhost:5000/api/resignation/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ sender, firstName, lastDay, reason }),
       })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to submit resignation")
+      }
+      if (socket) {
+        socket.emit("newMessage", {
+          sender,
+          receiver:"manager@gmail.com",
+          content:reason,
+        });
+      }
+      setStatus({ type: "success", message: "Resignation submitted successfully!" })
+      setFullName("")
+      setLastWorkingDay(undefined)
+      setReason("")
+      setSubmitted(true)
+    } catch (err) {
+      setStatus({ type: "error", message: err.message })
+      console.error(err)
+    } finally {
+      setIsLoading(false)
 
       setSubmitted(true)
       setFullName("")
@@ -72,6 +101,55 @@ export default function ResignationPage() {
       setReason("")
     }
   }
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setStatus({ type: "error", message: "User not authenticated" });
+      return;
+    }
+
+    let decoded;
+    try {
+      decoded = jwtDecode(token);
+    } catch {
+      setStatus({ type: "error", message: "Invalid token" });
+      return;
+    }
+
+    const userEmail = decoded.email;
+
+    // Connect to Socket.IO server on port 5001 with userEmail as query param
+    const socketIo = io("http://localhost:5001", {
+      query: { email: userEmail },
+      transports: ["websocket", "polling"],
+    });
+
+    socketIo.on("connect", () => {
+      console.log("Connected to Socket.IO server on port 5001");
+    });
+
+    socketIo.on("message", (msg) => {
+      console.log("Received socket message:", msg);
+      if (msg.type === "NEW_MESSAGE") {
+        setStatus({
+          type: "success",
+          message: `New message received from ${msg.payload.sender}`,
+        });
+      }
+    });
+
+    socketIo.on("connect_error", (err) => {
+      console.error("Socket.IO connection error:", err);
+      setStatus({ type: "error", message: "Real-time connection error" });
+    });
+
+    setSocket(socketIo);
+
+    return () => {
+      socketIo.disconnect();
+    };
+  }, []);
+  if (isLoading) return <Loading />
 
   return (
     <div className="flex min-h-screen flex-col p-2">
@@ -80,6 +158,12 @@ export default function ResignationPage() {
           <h1 className="text-3xl font-bold tracking-tight">Resignation Letter</h1>
           <p className="text-gray-500">Fill out the form below to submit your formal resignation.</p>
         </div>
+
+        {status && (
+          <div className={`text-center ${status.type === "error" ? "text-red-500" : "text-green-500"}`}>
+            {status.message}
+          </div>
+        )}
 
         <Card>
           <CardHeader>

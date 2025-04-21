@@ -19,6 +19,7 @@ import Footer from "@/components/Footer";
 import Message from "@/components/manager/message";
 import {useNavigate} from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
+import CreateAccount from "./createAccount";
 // Importing the components for each section
 
 export default function Manager() {
@@ -53,7 +54,7 @@ export default function Manager() {
       case "ViewEmpolyees":
         return <EmployeeList/>;
       case "AddEmpolyee":
-        return <AddEmployee/>;
+        return <CreateAccount/>;
       case "UpdateEmpolyee":
         return <UpdateEmployee/>;
       case "Leave":

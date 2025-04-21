@@ -20,14 +20,16 @@ import axios from "axios"; // Import Axios
 export default function EmployeeList() {
   const [isLoading, setIsLoading] = useState(false);
   const [employees, setEmployees] = useState([]);
-
+  const [refresh, setRefresh] = useState(false);
   const initialEmployees = async () => {
+    
     setIsLoading(true);
     try {
-      const data = await getEmployees(); // Calls the service function to get employees
+      const res = await fetch('http://localhost:5000/api/user/');
+      const data = await res.json();
       setEmployees(data);
     } catch (error) {
-      console.error("Error fetching users:", error.message);
+      console.error("Error fetching users:", error);
     } finally {
       setIsLoading(false);
     }
@@ -35,19 +37,21 @@ export default function EmployeeList() {
 
   useEffect(() => {
     initialEmployees();
-  }, []);
+  }, [refresh]);
+  
 
-  const handleDeleteEmployee = async (idToDelete) => {
-    try {
-      const res = await axios.delete(`http://localhost:5000/api/user/${idToDelete}`);
-      if (res.status === 200) {
-        // Update the UI by removing the deleted employee from the state
-        setEmployees((prev) => prev.filter((emp) => emp._id !== idToDelete));
-      }
-    } catch (err) {
-      console.log("Error deleting employee:", err.message);
-    }
-  };
+  // Simplified delete function, accepts the ID directly
+  const handleDeleteEmployee = async (idToDelete) =>  { 
+    console.log('cc')
+  try {
+    const res = await fetch(`http://localhost:5000/api/user/${idToDelete}`, {
+      method: 'DELETE',
+    });
+    
+    if (res.ok) {
+      console.log('delted')
+      setRefresh(prev => !prev);
+  }, []);
 
   if (isLoading) return <Loading />;
 
