@@ -27,6 +27,7 @@ router.post("/register",async(req,res)=>{
     }}
 
 );
+
 function generateJWT(user){
     const payload={
         id:user._id,

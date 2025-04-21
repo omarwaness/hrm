@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { jwtDecode } from 'jwt-decode'
+
 import Loading from "../Loading"
 
 export default function LeaveRequest() {
@@ -28,8 +29,9 @@ export default function LeaveRequest() {
   }, [status.type])
 
   const handleSubmit = async (e) => {
-    
+
     e.preventDefault()
+    setSuccessMessage("")
     setIsLoading(true)
     setStatus({ type: null, message: "" })
 
@@ -68,7 +70,6 @@ export default function LeaveRequest() {
     } finally {
       setIsLoading(false)
     }
-  }
 
   if (isLoading) return <Loading />
 
@@ -79,6 +80,12 @@ export default function LeaveRequest() {
           <h1 className="text-3xl font-bold tracking-tight">Leave Request</h1>
           <p className="text-muted-foreground">Submit your leave dates and reason below.</p>
         </div>
+
+        {successMessage && (
+          <div className="rounded-md bg-green-100 text-green-800 px-4 py-3 text-center font-medium shadow">
+            {successMessage}
+          </div>
+        )}
 
         <Card>
           <CardHeader>

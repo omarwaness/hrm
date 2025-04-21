@@ -2,7 +2,7 @@
 import axios from "axios"
 
 
-const API_BASE_URL = "http://localhost:5000/api/leave"; // adjust to your actual backend base path
+const API_BASE_URL = "http://localhost:5000/api/leave" // adjust to your actual backend base path
 
 /**
  * Get leave requests by email

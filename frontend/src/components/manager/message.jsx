@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { jwtDecode } from "jwt-decode";
 import { io } from "socket.io-client";
 
+
 export default function Message() {
   const [email, setEmail] = useState("");
   const [content, setContent] = useState("");
@@ -166,6 +167,9 @@ export default function Message() {
                 "Send Message"
               )}
             </Button>
+            {confirmationMessage && (
+              <p className="text-green-600 text-sm mt-2 text-center">{confirmationMessage}</p>
+            )}
           </form>
         </CardContent>
       </Card>

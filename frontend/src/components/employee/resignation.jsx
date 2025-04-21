@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { jwtDecode } from "jwt-decode"
 import Loading from "../Loading"
 import {io} from 'socket.io-client'
+
 export default function ResignationPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -93,6 +94,11 @@ export default function ResignationPage() {
       console.error(err)
     } finally {
       setIsLoading(false)
+
+      setSubmitted(true)
+      setFullName("")
+      setLastWorkingDay(undefined)
+      setReason("")
     }
   }
   useEffect(() => {
@@ -186,7 +192,10 @@ export default function ResignationPage() {
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
-                        className={cn("w-full pl-3 text-left font-normal", !lastWorkingDay && "text-muted-foreground")}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !lastWorkingDay && "text-muted-foreground"
+                        )}
                       >
                         {lastWorkingDay ? format(lastWorkingDay, "PPP") : <span>Pick a date</span>}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -202,7 +211,9 @@ export default function ResignationPage() {
                       />
                     </PopoverContent>
                   </Popover>
-                  {errors.lastWorkingDay && <p className="text-sm text-red-500">{errors.lastWorkingDay}</p>}
+                  {errors.lastWorkingDay && (
+                    <p className="text-sm text-red-500">{errors.lastWorkingDay}</p>
+                  )}
                 </div>
               </div>
 
@@ -217,7 +228,9 @@ export default function ResignationPage() {
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                 />
-                <p className="text-xs text-gray-500">Provide a brief explanation for your resignation if you wish.</p>
+                <p className="text-xs text-gray-500">
+                  Provide a brief explanation for your resignation if you wish.
+                </p>
               </div>
 
               <Button type="submit" className="w-full">
@@ -226,6 +239,18 @@ export default function ResignationPage() {
             </form>
           </CardContent>
         </Card>
+
+        {submitted && (
+          <Card className="bg-green-50 border border-green-200">
+            <CardHeader className="flex flex-row items-center gap-2 text-green-700">
+              <CheckCircle2 className="h-5 w-5" />
+              <CardTitle className="text-green-700 text-lg">Resignation Submitted</CardTitle>
+            </CardHeader>
+            <CardContent className="text-green-600">
+              Your resignation has been submitted successfully. Thank you for your service.
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )
