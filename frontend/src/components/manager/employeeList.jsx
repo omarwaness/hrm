@@ -18,24 +18,24 @@ import { Trash2 } from "lucide-react";
 export default function EmployeeList() {
   const [isLoading,setIsLoading]=useState(false)
   const [employees, setEmployees] = useState([]);
+  const [refresh, setRefresh] = useState(false);
   const initialEmployees = async () => {
     
-   setIsLoading(true)
+    setIsLoading(true);
     try {
       const res = await fetch('http://localhost:5000/api/user/');
-      
       const data = await res.json();
       setEmployees(data);
     } catch (error) {
       console.error("Error fetching users:", error);
-    }finally{
-      setIsLoading(false)
+    } finally {
+      setIsLoading(false);
     }
   };
   
   useEffect(() => {
     initialEmployees();
-  }, []);
+  }, [refresh]);
   
 
   // Simplified delete function, accepts the ID directly
@@ -48,6 +48,7 @@ export default function EmployeeList() {
     
     if (res.ok) {
       console.log('delted')
+      setRefresh(prev => !prev);
     }
   } catch(err) {
     console.log(err)

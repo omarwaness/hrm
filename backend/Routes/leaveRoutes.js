@@ -87,16 +87,7 @@ const express=require("express");
 const Leave=require("../models/Leaves");
 const router=express.Router();
 
-router.get('/',async(req,res)=>{
-  try{
-    const leaves=await Leave.find().sort({createdAt:-1})
-    res.status(200).json(leaves);
 
-  }catch(err)
-  {
-    res.status(500).json({messsage:err.message})
-  }
-})
 
 router.post("/create", async (req, res) => {
   try {
@@ -118,6 +109,26 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: err.message })
   }
 })
+router.put('/:_id/deny',async(req,res)=>{
+  const leave=await Leave.findByIdAndUpdate(
+    req.params._id,{
+      status:'denided'
+    },{new:true}
+  )
+  console.group("cc")
+  res.status(200).json({message:'updated succefully'})
+})
+
+router.put('/:_id/approved',async(req,res)=>{
+  const leave=await Leave.findByIdAndUpdate(
+    req.params._id,{
+      status:'approved'
+    },{new:true}
+  )
+  console.group("cc")
+  res.status(200).json({message:'updated succefully'})
+})
+
 
 
 module.exports=router;

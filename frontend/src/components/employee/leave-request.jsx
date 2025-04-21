@@ -122,7 +122,7 @@ export default function LeaveRequest() {
                         mode="single"
                         selected={fromDate}
                         onSelect={setFromDate}
-                        disabled={(date) => date < new Date()}
+                        disabled={(date) => date < toDate}
                         initialFocus
                       />
                     </PopoverContent>

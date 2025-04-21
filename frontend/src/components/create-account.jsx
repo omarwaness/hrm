@@ -46,14 +46,14 @@ export function CreateAccountForm({
       const res = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, phoneNumber, role, email, password }),
+        body: JSON.stringify({ firstName, lastName, phoneNumber,role: role||'Conditate', email, password }),
         credentials: "include",
       });
 
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem("token", data.token); 
-        navigate("/");
+        navigate("/jobs");
       } else {
         alert(data.message); 
       }
@@ -131,7 +131,7 @@ export function CreateAccountForm({
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       required
                     />
-                  </div>{token && (
+                  </div>{(
                   <div>
                     <Label htmlFor="role">Role</Label><br></br>
                     
