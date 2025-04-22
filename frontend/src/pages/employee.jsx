@@ -11,6 +11,8 @@ import Inbox from "@/components/inbox";
 import Footer from "@/components/Footer";
 import {useNavigate} from'react-router-dom';
 import {jwtDecode} from 'jwt-decode'
+import ChatWidget from "@/components/ChatWidget";
+
 // Importing the components for each section
 
 export default function Employee() {
@@ -60,6 +62,7 @@ export default function Employee() {
           <SidebarInset>
             <div className="flex flex-1 flex-col gap-4 p-4">
               {renderComponent()}
+              <ChatWidget/>
             </div>
           </SidebarInset>
         </div>
