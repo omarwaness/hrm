@@ -1,5 +1,3 @@
-// ChatWidget.jsx
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,20 +34,21 @@ export default function ChatWidget() {
       </Button>
 
       {isOpen && (
-        <Card className="w-80 h-[28rem] flex flex-col justify-between mt-2 shadow-2xl rounded-2xl">
-          <CardHeader className="border-b flex justify-between items-center">
+        <Card className="w-80 h-[28rem] flex flex-col justify-between mt-2 shadow-2xl rounded-2xl bg-card text-card-foreground border border-border">
+          <CardHeader className="border-b border-border flex justify-between items-center">
             <CardTitle className="text-lg">AI Chat</CardTitle>
             <Button variant="ghost" size="icon" onClick={toggleChat} className="h-7 w-7">
               <X className="w-4 h-4" />
             </Button>
           </CardHeader>
+
           <CardContent className="flex-1 overflow-y-auto space-y-2 p-4">
             {messages.map((msg, index) => (
               <div
                 key={index}
-                className={`p-2 rounded-xl max-w-[80%] ${
+                className={`p-2 rounded-xl max-w-[80%] whitespace-pre-wrap ${
                   msg.sender === "user"
-                    ? "bg-primary text-white ml-auto"
+                    ? "bg-primary text-primary-foreground ml-auto"
                     : "bg-muted text-muted-foreground mr-auto"
                 }`}
               >
@@ -62,7 +61,8 @@ export default function ChatWidget() {
               </div>
             )}
           </CardContent>
-          <div className="p-4 border-t flex gap-2">
+
+          <div className="p-4 border-t border-border flex gap-2">
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}

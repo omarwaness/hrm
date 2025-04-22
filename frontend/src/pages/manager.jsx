@@ -55,7 +55,7 @@ export default function Manager() {
       case "ViewEmpolyees":
         return <EmployeeList/>;
       case "AddEmpolyee":
-        return <CreateAccount/>;
+        return <AddEmployee/>;
       case "UpdateEmpolyee":
         return <UpdateEmployee/>;
       case "Leave":
