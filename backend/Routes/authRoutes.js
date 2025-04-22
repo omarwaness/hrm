@@ -63,17 +63,15 @@ router.post("/login",async(req,res)=>{
         const user=await User.findOne({email});
         if(!user) return res.status(404).json({message:"User not found"});
         const isMatch=await crypt.compare(password,user.password);
-        if(!isMatch) return res.status(500).json({message:'password dosnèt match'});
+        if(!isMatch) return res.status(500).json({message:'password not match'});
         const token = generateJWT(user);
         res.cookie("token", token, { httpOnly: true });
         res.status(200).json({ message: "Login Successfully", token });
-        
-
-
-            }catch(err){
+    }catch(err){
                 res.status(500).json({message:err.message})
             }
 });
+
 router.post("/logout",async(req,res)=>{
     res.cookie("token","",{httpOnly:true,expires:new Date(0)});
     res.status(200).json({message:"Logged out"});
