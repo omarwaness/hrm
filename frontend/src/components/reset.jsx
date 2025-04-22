@@ -85,7 +85,7 @@ export default function PasswordReset() {
         setSuccess(true);
         setTimeout(() => {
           navigate('/login');
-        }, 1000);
+        }, 500);
       } else {
         setError(data.message || "An error occurred.");
       }

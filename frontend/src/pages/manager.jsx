@@ -20,6 +20,7 @@ import Message from "@/components/manager/message";
 import {useNavigate} from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
 import CreateAccount from "./createAccount";
+import ChatWidget from "@/components/ChatWidget";
 // Importing the components for each section
 
 export default function Manager() {
@@ -85,6 +86,7 @@ export default function Manager() {
           <SidebarInset>
             <div className="flex flex-1 flex-col gap-4 p-4">
               {renderComponent()}
+              <ChatWidget/>
             </div>
           </SidebarInset>
         </div>
