@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { jwtDecode } from "jwt-decode";
 import { io } from "socket.io-client";
 
-
 export default function Message() {
   const [email, setEmail] = useState("");
   const [content, setContent] = useState("");
@@ -31,7 +30,6 @@ export default function Message() {
 
     const userEmail = decoded.email;
 
-    // Connect to Socket.IO server on port 5001 with userEmail as query param
     const socketIo = io("http://localhost:5001", {
       query: { email: userEmail },
       transports: ["websocket", "polling"],
@@ -76,7 +74,6 @@ export default function Message() {
       const receiver = e.target.email.value;
       const content = e.target.content.value;
 
-      // Send message via REST API on port 5000
       const response = await fetch("http://localhost:5000/api/message/create", {
         method: "POST",
         headers: { 
@@ -93,7 +90,6 @@ export default function Message() {
         throw new Error(data.message || "Failed to send message");
       }
 
-      // Emit new message event to Socket.IO server on port 5001
       if (socket) {
         socket.emit("newMessage", {
           sender,
@@ -167,9 +163,6 @@ export default function Message() {
                 "Send Message"
               )}
             </Button>
-            {confirmationMessage && (
-              <p className="text-green-600 text-sm mt-2 text-center">{confirmationMessage}</p>
-            )}
           </form>
         </CardContent>
       </Card>
