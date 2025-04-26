@@ -30,7 +30,6 @@ export default function Message() {
 
     const userEmail = decoded.email;
 
-    // Connect to Socket.IO server on port 5001 with userEmail as query param
     const socketIo = io("http://localhost:5001", {
       query: { email: userEmail },
       transports: ["websocket", "polling"],
@@ -75,7 +74,6 @@ export default function Message() {
       const receiver = e.target.email.value;
       const content = e.target.content.value;
 
-      // Send message via REST API on port 5000
       const response = await fetch("http://localhost:5000/api/message/create", {
         method: "POST",
         headers: { 
@@ -92,7 +90,6 @@ export default function Message() {
         throw new Error(data.message || "Failed to send message");
       }
 
-      // Emit new message event to Socket.IO server on port 5001
       if (socket) {
         socket.emit("newMessage", {
           sender,
