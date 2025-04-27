@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "react-router-dom"; // ✅ Import useParams
 import { applyForJob } from "@/services/applicationService"; // Adjust path if needed
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function ApplyToJob({ jobId }) {
+export default function ApplyToJob() {
+  const { jobId } = useParams(); // ✅ Get jobId from URL
   const [email, setEmail] = useState("");
   const [cvFile, setCvFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -19,7 +21,18 @@ export default function ApplyToJob({ jobId }) {
     setSuccessMessage("");
     setErrorMessage("");
 
+    // Validate form inputs
+    if (!email || !cvFile) {
+      setErrorMessage("Email and CV are required.");
+      setLoading(false);
+      return;
+    }
+
     try {
+      if (!jobId) {
+        throw new Error("No Job ID found.");
+      }
+
       await applyForJob({
         email,
         jobId,

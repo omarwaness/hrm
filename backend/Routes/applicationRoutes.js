@@ -20,7 +20,7 @@ router.post('/apply', upload.single('cv'), async (req, res) => {
     const savedApplication = await application.save();
     res.status(201).json(savedApplication);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 

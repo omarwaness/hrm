@@ -1,8 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Building, MapPin, Calendar, Briefcase } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function JobDetails({
+  id,
   title,
   company,
   location,
@@ -14,6 +16,7 @@ export default function JobDetails({
 }) {
   // Format the posted date nicely
   const formattedDate = postedAt ? new Date(postedAt).toLocaleDateString() : "";
+  const navigate = useNavigate();
 
   return (
     <div className="rounded-lg p-6 shadow-sm bg-card w-full max-w-2xl mx-auto">
@@ -84,7 +87,7 @@ export default function JobDetails({
       )}
 
       <div className="mt-6">
-        <Button className="w-full">Apply Now</Button>
+        <Button className="w-full"  onClick={() => navigate(`/apply/${id}`)}>Apply Now</Button>
       </div>
     </div>
   );

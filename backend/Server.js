@@ -56,7 +56,7 @@ app.use("/api/reports", require("./Routes/reportRoutes"));
 app.use("/api/resignation", require("./Routes/ResignationRoutes"));
 app.use("/api/ai", require("./Routes/chatRoutes"));
 app.use("/api/jobs", require("./Routes/jobRoutes"))
-app.use("/api/application", require("./Routes/applicationRoutes"))
+app.use("/api/applications", require("./Routes/applicationRoutes"))
 
 
 // Make io available in routes/controllers
