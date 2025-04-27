@@ -1,7 +1,8 @@
 // import all the things we need  
-const GoogleStrategy = require('passport-google-oauth20').Strategy
-const mongoose = require('mongoose')
-const User = require('../models/Users')
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const User = require('../models/Users');
 
 module.exports = function (passport) {
   passport.use(
@@ -12,47 +13,56 @@ module.exports = function (passport) {
         callbackURL: 'http://localhost:5000/api/auth/google/callback',
       },
       async (accessToken, refreshToken, profile, done) => {
-        //get the user data from google 
-        const newUser = {
+        const newUserData = {
           googleId: profile.id,
           displayName: profile.displayName,
           firstName: profile.name.givenName,
           lastName: profile.name.familyName,
           image: profile.photos[0].value,
           email: profile.emails[0].value
-        }
+        };
 
         try {
-          //find the user in our database 
-          let user = await User.findOne({ googleId: profile.id })
+          // Check if user with this email already exists
+          let user = await User.findOne({ email: newUserData.email });
 
           if (user) {
-            //If user present in our database.
-            done(null, user)
+            // ⚠️ Email exists but maybe Google ID is different
+            if (!user.googleId) {
+              // Update user with Google ID if missing
+              user.googleId = newUserData.googleId;
+              await user.save();
+            }
           } else {
-            // if user is not preset in our database save user data to database.
-            user = await User.create(newUser)
-            done(null, user)
+            // No user with this email => create new
+            user = await User.create(newUserData);
           }
+
+          // ✅ Always generate a token for this user
+          const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+          // Attach token to user object (temporary for redirect)
+          user.token = token;
+
+          done(null, user);
         } catch (err) {
-          console.error(err)
+          console.error('Google strategy error:', err);
+          done(err, null);
         }
       }
     )
-  )
+  );
 
-  // used to serialize the user for the session
   passport.serializeUser((user, done) => {
-    done(null, user.id)
-  })
+    done(null, user.id);
+  });
 
-  // used to deserialize the user
   passport.deserializeUser(async (id, done) => {
     try {
       const user = await User.findById(id);
       done(null, user);
     } catch (err) {
-      done(err);
+      done(err, null);
     }
   });
-} 
+};

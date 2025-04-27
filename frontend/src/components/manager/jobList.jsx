@@ -1,61 +1,71 @@
-import React, { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
+import { getAllJobs, deleteJob } from "@/services/jobService"; // Adjust path if needed
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
-
-const initialJobs = [
-  {
-    id: 1,
-    title: "Frontend Developer",
-    salaryRange: "$60,000 - $80,000",
-    requirements: "React, Tailwind CSS, REST APIs",
-    responsibilities: "Build and maintain UI components",
-    createdAt: "2025-04-10",
-  },
-  {
-    id: 2,
-    title: "Backend Developer",
-    salaryRange: "$70,000 - $90,000",
-    requirements: "Node.js, Express, MongoDB",
-    responsibilities: "Develop and manage server-side logic",
-    createdAt: "2025-04-08",
-  },
-  {
-    id: 3,
-    title: "Project Manager",
-    salaryRange: "$80,000 - $100,000",
-    requirements: "Agile, Scrum, Communication Skills",
-    responsibilities: "Lead project planning and coordination",
-    createdAt: "2025-04-05",
-  },
-];
+import Loading from "../Loading";
 
 export default function JobList() {
-  const [jobs, setJobs] = useState(initialJobs);
+  const [jobs, setJobs] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [refresh, setRefresh] = useState(false);
 
-  const handleDeleteJob = (idToDelete) => {
-    setJobs((prevJobs) => prevJobs.filter((job) => job.id !== idToDelete));
-    console.log(`Job with ID ${idToDelete} deleted.`);
+  // Fetch jobs
+  const initialJobs = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getAllJobs();
+      setJobs(data);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  useEffect(() => {
+    initialJobs();
+  }, [refresh]);
+
+  // Delete job
+  const handleDeleteJob = async (idToDelete) => {
+    try {
+      await deleteJob(idToDelete);
+      console.log("Job deleted successfully");
+      setRefresh((prev) => !prev); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting job:", error);
+    }
+  };
+
+  if (isLoading) return <Loading />;
 
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">Job Listings</h1>
+        <h1 className="text-3xl font-bold mb-4 text-slate-900 dark:text-white">
+          Job Listings
+        </h1>
+        <p className="text-base text-slate-600 dark:text-slate-200 mb-6">
+          View and manage all posted job offers
+        </p>
+
         <div className="grid gap-4">
           {jobs.map((job) => (
-            <Card key={job.id} className="relative">
+            <Card key={job._id} className="relative">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -72,14 +82,14 @@ export default function JobList() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the job listing for{" "}
+                      This will permanently delete the job posting for{" "}
                       <span className="font-medium">{job.title}</span>.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={() => handleDeleteJob(job.id)}
+                      onClick={() => handleDeleteJob(job._id)}
                       className="bg-red-600 hover:bg-red-700"
                     >
                       Delete
@@ -88,26 +98,26 @@ export default function JobList() {
                 </AlertDialogContent>
               </AlertDialog>
 
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 pt-10">
+              <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 pt-10">
                 <div>
-                  <p className="text-sm text-gray-500">Job Title</p>
-                  <p className="font-medium">{job.title}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Title</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{job.title}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Salary Range</p>
-                  <p className="font-medium">{job.salaryRange}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Salary</p>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    ${job.salary?.toLocaleString()}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Requirements</p>
-                  <p className="font-medium">{job.requirements}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Location</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{job.location || "Remote"}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Responsibilities</p>
-                  <p className="font-medium">{job.responsibilities}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Date Created</p>
-                  <p className="font-medium">{job.createdAt}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Posted</p>
+                  <p className="font-medium text-slate-900 dark:text-white">
+                    {new Date(job.postedAt).toLocaleDateString()}
+                  </p>
                 </div>
               </CardContent>
             </Card>

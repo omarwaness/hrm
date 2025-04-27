@@ -1,488 +1,606 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Star, StarOff, Trash2, Mail, MailOpen } from "lucide-react";
+import { format } from "date-fns"; // Using date-fns
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Star, Trash2, Mail, MailOpen } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { jwtDecode } from "jwt-decode";
-import Loading from "./Loading";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
-import { useNotifications } from "./site-header"; // Importez le contexte
+
+import Loading from "./Loading"; // Assuming Loading component exists
+import { useNotifications } from "./site-header"; // Keep existing context import
+import { cn } from "@/lib/utils";
+
+// Define notification sound data (ensure this works or replace with a valid source)
+const notificationSoundData = "data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU" + Array(20).fill("A").join("");
 
 export default function Inbox() {
-  const [messages, setMessages] = useState([]);
-  const [openMessageId, setOpenMessageId] = useState(null);
-  const [filter, setFilter] = useState("all");
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [messageToDelete, setMessageToDelete] = useState(null);
-  const socket = useRef(null);
-  const messagesRef = useRef(new Set()); // Pour suivre les IDs de messages et éviter les doublons
-  const notificationSound = useRef(new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"+
-  Array(20).fill("A").join(""))); // Simple beep
-  
-  // Utiliser le contexte de notification
-  const { setUnreadCount, setHasNewMessage } = useNotifications();
+    const [messages, setMessages] = useState([]);
+    const [openMessageId, setOpenMessageId] = useState(null);
+    const [filter, setFilter] = useState("all"); // 'all' or 'starred'
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [messageToDelete, setMessageToDelete] = useState(null);
+    const socket = useRef(null);
+    const messagesRef = useRef(new Set()); // Tracks IDs to prevent duplicates
+    const notificationSound = useRef(null);
 
-  useEffect(() => {
-    const fetchMessagesAndConnect = async () => {
-      setIsLoading(true);
-      setError(null);
+    // Notification context
+    const { setUnreadCount, setHasNewMessage } = useNotifications();
 
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token found");
+    // Initialize Audio only once on the client-side
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            notificationSound.current = new Audio(notificationSoundData);
+        }
+    }, []);
 
-        const { email } = jwtDecode(token);
+    // Fetch initial messages and connect WebSocket
+    useEffect(() => {
+        const fetchMessagesAndConnect = async () => {
+            console.log("Inbox: Starting fetchMessagesAndConnect");
+            setIsLoading(true);
+            setError(null);
 
-        // Récupérer les messages depuis l'API REST où l'utilisateur est le destinataire
-        const res = await fetch(`http://localhost:5000/api/message/${email}`, {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          },
-          credentials: "include"
-        });
-        
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) throw new Error("Authentication required.");
 
-        const data = await res.json();
-        console.log("Fetched messages:", data);
-        
-        // S'assurer qu'il n'y a pas de messages dupliqués en utilisant un Set d'IDs
-        const uniqueMessages = [];
-        messagesRef.current.clear(); // Réinitialiser le Set
-        
-        data.forEach(msg => {
-          if (!messagesRef.current.has(msg._id)) {
-            messagesRef.current.add(msg._id);
-            uniqueMessages.push(msg);
-          }
-        });
-        
-        // Compter les messages non lus
-        const unread = uniqueMessages.filter(msg => !msg.read).length;
-        setUnreadCount(unread); // Mettre à jour le contexte
-        setMessages(uniqueMessages);
+                const { email } = jwtDecode(token);
+                console.log(`Inbox: User email decoded: ${email}`);
 
-        // Se connecter au serveur Socket.IO sur le port 5001
-        socket.current = io("http://localhost:5001", {
-          query: { email },
-          reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 1000
-        });
-
-        socket.current.on("message", (message) => {
-          console.log("Received socket message:", message);
-          switch (message.type) {
-            case "NEW_MESSAGE":
-              // Vérifier si le message existe déjà
-              if (!messagesRef.current.has(message.payload._id)) {
-                messagesRef.current.add(message.payload._id);
-                
-                setMessages((prev) => {
-                  // Double vérification pour éviter les doublons
-                  const exists = prev.some(msg => msg._id === message.payload._id);
-                  if (exists) return prev;
-                  return [message.payload, ...prev];
+                // Fetch messages
+                console.log("Inbox: Fetching initial messages...");
+                const res = await fetch(`http://localhost:5000/api/message/${email}`, {
+                    headers: { "Authorization": `Bearer ${token}` },
+                    credentials: "include"
                 });
-                
-                // Mettre à jour le compteur de messages non lus
-                setUnreadCount(prev => prev + 1);
-                setHasNewMessage(true);
-                
-                // Jouer le son de notification
-                notificationSound.current.play().catch(e => console.error("Failed to play notification:", e));
-                
-                // Afficher une notification toast
-                toast.custom((t) => (
-                  <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
-                    <div className="flex-1 w-0 p-4">
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0 pt-0.5">
-                          <Mail className="h-10 w-10 text-blue-500" />
-                        </div>
-                        <div className="ml-3 flex-1">
-                          <p className="text-sm font-medium text-gray-900">
-                            {message.payload.sender}
-                          </p>
-                          <p className="mt-1 text-sm text-gray-500">
-                            {message.payload.subject || message.payload.content.substring(0, 30)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex border-l border-gray-200">
-                      <button
-                        onClick={() => toast.dismiss(t.id)}
-                        className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none"
-                      >
-                        Fermer
-                      </button>
-                    </div>
-                  </div>
-                ), { duration: 5000 });
-              }
-              break;
-            case "MESSAGE_UPDATED":
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg._id === message.payload._id ? message.payload : msg
-                )
-              );
-              break;
-            case "MESSAGE_DELETED":
-              // Mettre à jour le compteur si le message supprimé était non lu
-              const deletedMessage = messages.find(msg => msg._id === message.payload);
-              if (deletedMessage && !deletedMessage.read) {
+
+                if (!res.ok) throw new Error(`Failed to fetch messages: ${res.status} ${res.statusText}`);
+
+                const data = await res.json();
+                console.log(`Inbox: Fetched ${data.length} messages initially.`);
+
+                const uniqueMessages = [];
+                messagesRef.current.clear(); // Clear ref before processing fetch results
+                data.forEach(msg => {
+                    if (!messagesRef.current.has(msg._id)) {
+                        messagesRef.current.add(msg._id);
+                        uniqueMessages.push(msg);
+                    } else {
+                         console.warn(`Inbox Fetch: Duplicate message ID ${msg._id} found in initial data, skipping.`);
+                    }
+                });
+                console.log(`Inbox: Processed fetch, ${uniqueMessages.length} unique messages identified.`);
+
+                const unread = uniqueMessages.filter(msg => !msg.read).length;
+                setUnreadCount(unread);
+                setMessages(uniqueMessages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))); // Sort messages newest first
+
+                // Connect to Socket.IO
+                console.log("Inbox: Connecting to Socket.IO server...");
+                socket.current = io("http://localhost:5001", {
+                    query: { email },
+                    reconnection: true,
+                    reconnectionAttempts: 5,
+                    reconnectionDelay: 1000
+                });
+
+                socket.current.on("connect", () => {
+                     console.log("Inbox: Socket.IO connected successfully.");
+                });
+
+                // Socket event handlers
+                socket.current.on("message", (message) => {
+                    console.log(`Inbox: Received socket message - Type: ${message.type}, Payload ID: ${message.payload?._id || message.payload}`);
+                    switch (message.type) {
+                        case "NEW_MESSAGE":
+                            const newMessage = message.payload;
+                            console.log(`Socket received NEW_MESSAGE: ${newMessage._id}`);
+
+                            // --- Initial check using messagesRef to potentially avoid unnecessary side effects ---
+                            if (!messagesRef.current.has(newMessage._id)) {
+                                console.log(`Message ${newMessage._id} not found in messagesRef. Proceeding to update state.`);
+
+                                // --- Use setMessages with functional update and internal check ---
+                                setMessages((prevMessages) => {
+                                    // **Crucial Check:** Verify if the ID already exists in the *current state*
+                                    if (prevMessages.some(msg => msg._id === newMessage._id)) {
+                                        console.warn(`Duplicate Prevention: Message ${newMessage._id} already found in state. Skipping add.`);
+                                        // Ensure the ref is consistent if the state already had it somehow
+                                         if (!messagesRef.current.has(newMessage._id)) {
+                                             messagesRef.current.add(newMessage._id);
+                                         }
+                                        return prevMessages; // Return the existing state without adding
+                                    } else {
+                                        // If truly new to the state array, add it and update the ref
+                                        console.log(`Adding message ${newMessage._id} to state.`);
+                                        messagesRef.current.add(newMessage._id); // Add ID to ref *only when adding to state*
+                                        return [newMessage, ...prevMessages]
+                                                 .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Add and sort
+                                    }
+                                });
+
+                                // --- Side effects only if the message was intended to be added (based on initial ref check) ---
+                                // These might still run even if the internal state check prevents addition due to timing.
+                                setUnreadCount(prev => prev + 1);
+                                setHasNewMessage(true);
+                                notificationSound.current?.play().catch(e => console.error("Audio play failed:", e));
+                                // Show toast...
+                                toast.custom((t) => (
+                                    <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
+                                        <div className="flex-1 w-0 p-4">
+                                            <div className="flex items-start">
+                                                <div className="flex-shrink-0 pt-0.5">
+                                                    <Mail className="h-10 w-10 text-blue-500" />
+                                                </div>
+                                                <div className="ml-3 flex-1">
+                                                    <p className="text-sm font-medium text-gray-900">
+                                                        {newMessage.sender}
+                                                    </p>
+                                                    <p className="mt-1 text-sm text-gray-500">
+                                                        {newMessage.subject || newMessage.content.substring(0, 30)}...
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex border-l border-gray-200">
+                                            <button
+                                                onClick={() => toast.dismiss(t.id)}
+                                                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none"
+                                            >
+                                                Fermer
+                                            </button>
+                                        </div>
+                                    </div>
+                                ), { duration: 5000 });
+
+                            } else {
+                                // This message ID was already known by the ref set
+                                console.log(`Ignoring socket event for known message ${newMessage._id} based on messagesRef.`);
+                            }
+                            break; // End NEW_MESSAGE case
+
+                        case "MESSAGE_UPDATED":
+                             console.log(`Socket received MESSAGE_UPDATED: ${message.payload._id}`);
+                            setMessages((prev) => {
+                                 const updated = prev.map((msg) =>
+                                    msg._id === message.payload._id ? message.payload : msg
+                                 );
+                                 // Recalculate unread count after potential update
+                                 const newUnreadCount = updated.filter(m => !m.read).length;
+                                 setUnreadCount(newUnreadCount);
+                                 return updated.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                             });
+                            break;
+
+                        case "MESSAGE_DELETED":
+                             const deletedId = message.payload;
+                             console.log(`Socket received MESSAGE_DELETED: ${deletedId}`);
+                             // Use functional update form to ensure we operate on the latest state
+                             setMessages((prevMessages) => {
+                                 const messageExists = prevMessages.some(msg => msg._id === deletedId);
+                                 if (!messageExists) {
+                                      console.warn(`Message deletion requested for ${deletedId}, but it was not found in current state.`);
+                                      return prevMessages; // No change needed
+                                 }
+
+                                 const deletedMsg = prevMessages.find(msg => msg._id === deletedId);
+                                 if (deletedMsg && !deletedMsg.read) {
+                                     setUnreadCount(prev => Math.max(0, prev - 1));
+                                 }
+                                 messagesRef.current.delete(deletedId); // Remove from tracking set
+                                 return prevMessages.filter((msg) => msg._id !== deletedId);
+                             });
+                            break;
+                        default:
+                             console.warn(`Inbox: Received unknown socket message type: ${message.type}`);
+                            break;
+                    }
+                });
+
+                socket.current.on("connect_error", (err) => {
+                    console.error("Inbox: Socket.IO connection error:", err);
+                    setError(`Real-time connection failed: ${err.message}. Try refreshing.`);
+                    toast.error("Real-time connection failed.");
+                });
+
+                socket.current.on("disconnect", (reason) => {
+                     console.log(`Inbox: Socket.IO disconnected. Reason: ${reason}`);
+                     if (reason === "io server disconnect") {
+                         // the disconnection was initiated by the server, you need to reconnect manually
+                         // socket.current.connect(); // Optional: auto-reconnect on server disconnect
+                     }
+                     // else the socket will automatically try to reconnect
+                });
+
+
+            } catch (err) {
+                console.error("Inbox: Error during initial fetch or setup:", err);
+                setError(err.message || "An error occurred while loading messages.");
+                toast.error(err.message || "Failed to load messages.");
+            } finally {
+                console.log("Inbox: fetchMessagesAndConnect finished.");
+                setIsLoading(false);
+            }
+        };
+
+        fetchMessagesAndConnect();
+
+        // Cleanup socket connection on unmount
+        return () => {
+             if (socket.current) {
+                 console.log("Inbox: Disconnecting Socket.IO on component unmount.");
+                 socket.current.disconnect();
+             }
+        };
+    }, [setUnreadCount, setHasNewMessage]); // Dependencies for context usage
+
+    // Toggle message read state and expand/collapse
+    const toggleMessage = async (id) => {
+        const message = messages.find(msg => msg._id === id);
+        const isOpening = openMessageId !== id;
+        setOpenMessageId(isOpening ? id : null);
+
+        if (message && !message.read && isOpening) {
+            console.log(`Inbox: Marking message ${id} as read.`);
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) throw new Error("No token found");
+
+                // Optimistic UI update
+                setMessages((prev) =>
+                    prev.map((msg) =>
+                        msg._id === id ? { ...msg, read: true } : msg
+                    )
+                );
                 setUnreadCount(prev => Math.max(0, prev - 1));
-              }
-              
-              setMessages((prev) =>
-                prev.filter((msg) => msg._id !== message.payload)
-              );
-              messagesRef.current.delete(message.payload);
-              break;
-            default:
-              break;
-          }
-        });
 
-        socket.current.on("connect_error", (err) => {
-          console.error("Socket.IO connection error:", err);
-          setError("Real-time connection error");
-        });
-      } catch (err) {
-        console.error("Error:", err);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
+                // API call to mark as read
+                const res = await fetch(`http://localhost:5000/api/message/${id}/read`, {
+                    method: "PUT",
+                    headers: { "Authorization": `Bearer ${token}` },
+                    credentials: "include"
+                });
+
+                if (!res.ok) throw new Error(`Failed to mark message ${id} as read: ${res.statusText}`);
+                console.log(`Inbox: Message ${id} successfully marked as read via API.`);
+
+            } catch (err) {
+                console.error(`Inbox: Error marking message ${id} as read:`, err);
+                toast.error("Failed to mark message as read. Reverting.");
+                 // Revert optimistic update on failure
+                setMessages((prev) =>
+                    prev.map((msg) =>
+                        msg._id === id ? { ...msg, read: false } : msg
+                    )
+                );
+                setUnreadCount(prev => prev + 1);
+            }
+        }
     };
 
-    fetchMessagesAndConnect();
+    // Toggle message favorite state
+    const toggleFavorite = async (id, e) => {
+        e.stopPropagation(); // Prevent toggleMessage from firing
+        console.log(`Inbox: Toggling favorite status for message ${id}.`);
+         const originalMessages = [...messages];
+         const messageIndex = messages.findIndex(msg => msg._id === id);
+         if (messageIndex === -1) {
+             console.error(`Inbox: Cannot toggle favorite, message ${id} not found.`);
+             return;
+         }
 
-    return () => {
-      if (socket.current) {
-        socket.current.disconnect();
-      }
+         const updatedMessage = { ...messages[messageIndex], favorite: !messages[messageIndex].favorite };
+         const newMessages = [...messages];
+         newMessages[messageIndex] = updatedMessage;
+
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) throw new Error("No token found");
+
+            // Optimistic UI update
+            setMessages(newMessages);
+
+            // API call
+            const res = await fetch(`http://localhost:5000/api/message/${id}/starred`, {
+                method: "PUT",
+                 headers: {
+                     "Content-Type": "application/json",
+                     "Authorization": `Bearer ${token}`
+                 },
+                credentials: "include",
+            });
+
+            if (!res.ok) throw new Error(`Failed to update favorite status for ${id}: ${res.statusText}`);
+            console.log(`Inbox: Message ${id} favorite status updated successfully via API.`);
+            toast.success(`Message ${updatedMessage.favorite ? 'starred' : 'unstarred'}`);
+
+        } catch (err) {
+            console.error(`Inbox: Error toggling favorite for message ${id}:`, err);
+            toast.error("Failed to update favorite status.");
+            // Revert optimistic update on failure
+            setMessages(originalMessages);
+        }
     };
-  }, [setUnreadCount, setHasNewMessage]);
 
-  const toggleMessage = async (id) => {
-    setOpenMessageId((prev) => (prev === id ? null : id));
-    
-    // Marquer comme lu lors de l'ouverture
-    const message = messages.find(msg => msg._id === id);
-    if (message && !message.read) {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token found");
+    // Show delete confirmation dialog
+    const confirmDeleteMessage = (id, e) => {
+        e.stopPropagation(); // Prevent toggleMessage from firing
+        console.log(`Inbox: Requesting delete confirmation for message ${id}.`);
+        setMessageToDelete(id);
+        setShowDeleteConfirm(true);
+    };
 
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg._id === id ? { ...msg, read: true } : msg
-          )
-        );
-        
-        // Mettre à jour le compteur de messages non lus
-        setUnreadCount(prev => Math.max(0, prev - 1));
+    // Hide delete confirmation dialog
+    const handleDeleteCancel = () => {
+        console.log("Inbox: Delete cancelled.");
+        setShowDeleteConfirm(false);
+        setMessageToDelete(null);
+    };
 
-        const res = await fetch(`http://localhost:5000/api/message/${id}/read`, {
-          method: "PUT",
-          headers: {
-            "Authorization": `Bearer ${token}`
-          },
-          credentials: "include"
-        });
+    // Delete message action
+    const deleteMessage = async () => {
+         if (!messageToDelete) return;
+         console.log(`Inbox: Proceeding with delete for message ${messageToDelete}.`);
 
-        if (!res.ok) throw new Error("Update failed");
-      } catch (err) {
-        console.error(err);
-        toast.error("Impossible de marquer le message comme lu");
-      }
-    }
-  };
+         const originalMessages = [...messages];
+         const messageToBeDeleted = messages.find(msg => msg._id === messageToDelete);
+         const wasUnread = messageToBeDeleted && !messageToBeDeleted.read;
 
-  const toggleFavorite = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token found");
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) throw new Error("No token found");
 
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg._id === id ? { ...msg, favorite: !msg.favorite } : msg
-        )
-      );
+            // Optimistic UI update
+            setMessages((prev) => prev.filter((msg) => msg._id !== messageToDelete));
+            messagesRef.current.delete(messageToDelete);
+            if (wasUnread) {
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            }
+            setShowDeleteConfirm(false); // Close modal optimistically
 
-      const res = await fetch(`http://localhost:5000/api/message/${id}/starred`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        credentials: "include"
-      });
+            // API call
+            const res = await fetch(`http://localhost:5000/api/message/${messageToDelete}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` },
+                credentials: "include"
+            });
 
-      if (!res.ok) throw new Error("Update failed");
-    } catch (err) {
-      console.error(err);
-      toast.error("Impossible de mettre à jour le statut favori");
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg._id === id ? { ...msg, favorite: !msg.favorite } : msg
-        )
-      );
-    }
-  };
+            if (!res.ok) throw new Error(`Delete failed for ${messageToDelete}: ${res.statusText}`);
 
-  const confirmDeleteMessage = (id) => {
-    setMessageToDelete(id);
-    setShowDeleteConfirm(true);
-  };
+            console.log(`Inbox: Message ${messageToDelete} deleted successfully via API.`);
+            toast.success("Message deleted successfully.");
+            setMessageToDelete(null); // Clear ID after successful deletion
 
-  const handleDeleteCancel = () => {
-    setShowDeleteConfirm(false);
-    setMessageToDelete(null);
-  };
+        } catch (err) {
+            console.error(`Inbox: Error deleting message ${messageToDelete}:`, err);
+            toast.error("Failed to delete message.");
+            // Revert optimistic update on failure
+            setMessages(originalMessages);
+            if (wasUnread) {
+                setUnreadCount(prev => prev + 1);
+            }
+            // Ensure ref is consistent if deletion failed
+            if (!messagesRef.current.has(messageToDelete) && messageToBeDeleted) {
+                 messagesRef.current.add(messageToDelete);
+            }
+            setShowDeleteConfirm(false); // Still close modal on error
+            setMessageToDelete(null);
+        }
+    };
 
-  const deleteMessage = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token found");
-
-      // Vérifier si le message à supprimer était non lu
-      const messageToBeDeleted = messages.find(msg => msg._id === messageToDelete);
-      const wasUnread = messageToBeDeleted && !messageToBeDeleted.read;
-      
-      setMessages((prev) => prev.filter((msg) => msg._id !== messageToDelete));
-      messagesRef.current.delete(messageToDelete); // Supprimer du Set de suivi
-      
-      // Mettre à jour le compteur si le message était non lu
-      if (wasUnread) {
-        setUnreadCount(prev => Math.max(0, prev - 1));
-      }
-      
-      setShowDeleteConfirm(false);
-      setMessageToDelete(null);
-
-      const res = await fetch(`http://localhost:5000/api/message/${messageToDelete}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
-        credentials: "include"
-      });
-
-      if (!res.ok) throw new Error("Delete failed");
-      toast.success("Message supprimé");
-    } catch (err) {
-      console.error(err);
-      toast.error("Impossible de supprimer le message");
-      window.location.reload();
-    }
-  };
-
-  const filteredMessages =
-    filter === "starred" ? messages.filter((msg) => msg.favorite) : messages;
-
-  if (isLoading) return <Loading />;
-  if (error)
-    return (
-      <div className="p-4 bg-red-50 rounded-lg text-red-600 font-semibold text-center mx-auto max-w-3xl mt-4">
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-xl">Error</span>
-          <p>{error}</p>
-        </div>
-      </div>
-    );
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    
-    // Si même jour, afficher uniquement l'heure
-    if (date.toDateString() === now.toDateString()) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-    
-    // Si dans la semaine dernière, afficher le nom du jour et l'heure
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    if (date > weekAgo) {
-      return date.toLocaleDateString([], { weekday: 'short' }) + ' ' + 
-             date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-    
-    // Sinon afficher la date complète
-    return date.toLocaleDateString([], { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    // Filter messages based on state
+    const filteredMessages = messages.filter((msg) => {
+        if (filter === "starred") {
+            return msg.favorite;
+        }
+        return true; // 'all' filter
     });
-  };
 
-  return (
-    <div className="p-4 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <Mail className="h-8 w-8 text-blue-600" />
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Real-Time Inbox
-          </h1>
-        </div>
-        <p className="text-sm text-gray-500 mb-4">
-          Messages update instantly via WebSocket connection
-        </p>
+    // Date Formatter using date-fns
+    const formatDate = (dateString) => {
+        try {
+            return format(new Date(dateString), "PPp"); // Format: Apr 26, 2025, 5:00:49 PM
+        } catch (e) {
+            console.error("Inbox: Date formatting error:", e);
+            return "Invalid Date";
+        }
+    };
 
-        {/* Boutons de filtre simples */}
-        <div className="flex gap-2 mb-4">
-          <Button 
-            variant={filter === "all" ? "default" : "outline"}
-            onClick={() => setFilter("all")}
-            className="flex items-center gap-2 text-base py-2 px-4"
-          >
-            <MailOpen className="h-5 w-5" />
-            <span>All Messages</span>
-            <span className="ml-1 px-2 py-0.5 bg-gray-200 text-gray-800 rounded-full text-xs">
-              {messages.length}
-            </span>
-          </Button>
-          <Button 
-            variant={filter === "starred" ? "default" : "outline"}
-            onClick={() => setFilter("starred")}
-            className="flex items-center gap-2 text-base py-2 px-4"
-          >
-            <Star className="h-5 w-5" />
-            <span>Starred</span>
-            <span className="ml-1 px-2 py-0.5 bg-gray-200 text-gray-800 rounded-full text-xs">
-              {messages.filter(msg => msg.favorite).length}
-            </span>
-          </Button>
-        </div>
-      </div>
+    // Render Loading state
+    if (isLoading) return <Loading />;
 
-      <Separator className="my-6" />
-
-      <div className="space-y-4">
-        {filteredMessages.length === 0 && (
-          <div className="p-12 text-center bg-gray-50 rounded-lg">
-            <Mail className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg">No messages found</p>
-          </div>
-        )}
-
-        {filteredMessages.map((msg) => (
-          <Card 
-            key={msg._id} 
-            className={`transition ${!msg.read ? 'border-l-4 border-l-blue-500' : ''} ${msg.favorite ? 'border-r-4 border-r-yellow-400' : ''} ${openMessageId === msg._id ? 'shadow-md bg-blue-50' : 'hover:shadow-md'}`}
-          >
-            <CardContent className="p-0">
-              <div 
-                className={`p-5 cursor-pointer flex items-start justify-between gap-4 ${!msg.read ? 'bg-blue-50 bg-opacity-50' : ''}`}
-                onClick={() => toggleMessage(msg._id)}
-              >
-                <div className="flex items-center gap-4 flex-grow">
-                  {openMessageId === msg._id ? 
-                    <MailOpen className="h-6 w-6 text-blue-500 flex-shrink-0" /> : 
-                    <Mail className={`h-6 w-6 flex-shrink-0 ${!msg.read ? 'text-blue-500' : 'text-gray-400'}`} />
-                  }
-                  <div className="flex-grow">
-                    <div className="flex items-baseline justify-between mb-2">
-                      <p className={`font-medium text-lg ${!msg.read ? 'font-bold text-blue-800' : ''} ${openMessageId === msg._id ? 'text-blue-700' : ''}`}>
-                        {msg.sender}
-                      </p>
-                      <span className="text-sm text-gray-500 ml-2">
-                        {formatDate(msg.createdAt)}
-                      </span>
-                    </div>
-                    {msg.subject && (
-                      <p className={`text-base ${openMessageId === msg._id || !msg.read ? 'font-medium' : ''}`}>
-                        {msg.subject}
-                      </p>
-                    )}
-                    {/* Aperçu du contenu si message non ouvert */}
-                    {openMessageId !== msg._id && (
-                      <p className="text-sm text-gray-500 truncate mt-1">
-                        {msg.content.substring(0, 80)}...
-                      </p>
-                    )}
-                  </div>
+    // Render Error state (Styled similarly to LeaveRequest status message)
+    if (error && messages.length === 0) { // Only show full error if no messages loaded
+        return (
+            <div className="flex min-h-screen flex-col items-center justify-center p-4">
+                <div className="rounded-md bg-destructive/10 text-destructive px-4 py-3 text-center font-medium shadow max-w-md border border-destructive/30">
+                    <p className="font-bold mb-2">Error Loading Inbox</p>
+                    <p className="text-sm">{error}</p>
+                     <Button variant="outline" size="sm" className="mt-4 border-destructive/50 text-destructive hover:bg-destructive/5 hover:text-destructive" onClick={() => window.location.reload()}>
+                        Retry
+                    </Button>
                 </div>
-                <div onClick={(e) => e.stopPropagation()} className="flex items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleFavorite(msg._id)}
-                    className={`text-gray-400 hover:text-yellow-500 h-10 w-10 ${msg.favorite ? 'bg-yellow-50' : ''}`}
-                    aria-label={msg.favorite ? "Unstar message" : "Star message"}
-                  >
-                    {msg.favorite ? (
-                      <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                    ) : (
-                      <Star className="w-5 h-5" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => confirmDeleteMessage(msg._id)}
-                    className="text-gray-400 hover:text-red-500 h-10 w-10"
-                    aria-label="Delete message"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </Button>
-                </div>
-              </div>
-              
-              {openMessageId === msg._id && (
-                <>
-                  <Separator />
-                  <div className="p-6 bg-blue-50 bg-opacity-50">
-                    <div className="whitespace-pre-wrap leading-relaxed">
-                      {/* Afficher les informations du destinataire */}
-                      <div className="mb-4 p-3 bg-blue-100 rounded text-sm">
-                        <strong>To:</strong> {msg.receiver}
-                      </div>
-                      <div className="text-base bg-white p-4 rounded-lg shadow-sm">
-                        {msg.content}
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Modal pour la confirmation de suppression */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-semibold mb-3">Are you sure?</h3>
-            <p className="text-gray-600 mb-6 text-base">
-              This message will be permanently deleted and cannot be recovered.
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
-                onClick={handleDeleteCancel}
-                className="text-base py-2 px-4"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={deleteMessage} 
-                className="bg-red-500 hover:bg-red-600 text-white text-base py-2 px-4"
-              >
-                Delete
-              </Button>
             </div>
-          </div>
+        );
+    }
+
+    // Main component render
+    return (
+        <div className="flex min-h-screen flex-col p-4">
+            <div className="mx-auto w-full max-w-5xl space-y-6 py-10">
+                {/* Centered Header */}
+                <div className="space-y-2 text-center">
+                    <h1 className="text-3xl font-bold tracking-tight">Your Inbox</h1>
+                    <p className="text-muted-foreground">
+                        Messages update in real-time. {error ? `(Connection issue: ${error})` : ''}
+                    </p>
+                </div>
+
+                {/* Filter Buttons */}
+                <div className="flex flex-wrap justify-center gap-2">
+                     <Button
+                        variant={filter === "all" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilter("all")}
+                    >
+                        <MailOpen className="mr-2 h-4 w-4" />
+                        All Messages
+                        <span className="ml-2 inline-flex items-center justify-center rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                            {messages.length}
+                        </span>
+                    </Button>
+                    <Button
+                        variant={filter === "starred" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilter("starred")}
+                    >
+                        <Star className="mr-2 h-4 w-4" />
+                        Starred
+                        <span className="ml-2 inline-flex items-center justify-center rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                            {messages.filter(msg => msg.favorite).length}
+                        </span>
+                    </Button>
+                </div>
+
+                {/* Main Content Card */}
+                <Card>
+                    <CardContent className="p-0">
+                        {filteredMessages.length === 0 ? (
+                            <div className="p-10 text-center text-muted-foreground">
+                                <Mail className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+                                No messages found in this view.
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-border"> {/* Use divide for separators */}
+                                {filteredMessages.map((msg) => (
+                                    // Using div instead of Fragment for simpler structure if needed
+                                    <div key={msg._id}>
+                                        <div
+                                            className={cn(
+                                                "p-4 flex items-start gap-4 cursor-pointer transition-colors hover:bg-muted/50",
+                                                !msg.read && "bg-blue-500/10", // Subtle background for unread
+                                                openMessageId === msg._id && "bg-muted" // Background when open
+                                            )}
+                                            onClick={() => toggleMessage(msg._id)}
+                                        >
+                                             {/* Icon indicator */}
+                                             <div className="flex-shrink-0 pt-1">
+                                                 {openMessageId === msg._id ?
+                                                     <MailOpen className="h-5 w-5 text-primary" /> :
+                                                     <Mail className={cn("h-5 w-5", !msg.read ? 'text-primary' : 'text-muted-foreground')} />
+                                                 }
+                                             </div>
+
+                                            {/* Message Details */}
+                                            <div className="flex-grow min-w-0">
+                                                <div className="flex items-baseline justify-between">
+                                                    <p className={cn(
+                                                        "text-sm font-medium truncate",
+                                                        !msg.read && "font-bold text-foreground",
+                                                        openMessageId === msg._id && "text-primary"
+                                                    )}>
+                                                        {msg.sender}
+                                                    </p>
+                                                    <span className="text-xs text-muted-foreground flex-shrink-0 ml-2 whitespace-nowrap">
+                                                        {formatDate(msg.createdAt)}
+                                                    </span>
+                                                </div>
+                                                {msg.subject && (
+                                                    <p className={cn(
+                                                        "text-sm mt-1 truncate",
+                                                        !msg.read && "text-foreground",
+                                                        openMessageId === msg._id && "font-medium"
+                                                    )}>
+                                                        {msg.subject}
+                                                    </p>
+                                                )}
+                                                {openMessageId !== msg._id && (
+                                                    <p className="text-xs text-muted-foreground truncate mt-1">
+                                                        {msg.content.substring(0, 100)}...
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={(e) => toggleFavorite(msg._id, e)}
+                                                    className={cn("h-8 w-8 rounded-full", msg.favorite ? "text-yellow-500 hover:text-yellow-600 hover:bg-yellow-500/10" : "text-muted-foreground hover:text-foreground hover:bg-accent")}
+                                                    aria-label={msg.favorite ? "Unstar message" : "Star message"}
+                                                >
+                                                    <Star className={cn("h-4 w-4", msg.favorite && "fill-current")} />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={(e) => confirmDeleteMessage(msg._id, e)}
+                                                    className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                    aria-label="Delete message"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Expanded Content */}
+                                        {openMessageId === msg._id && (
+                                            <div className="p-4 pt-2 pl-12 bg-muted border-t border-border">
+                                                <div className="mb-2 p-2 bg-background rounded text-xs text-muted-foreground border">
+                                                    <strong>From:</strong> {msg.sender} <br/>
+                                                    <strong>To:</strong> {msg.receiver} <br/>
+                                                    <strong>Date:</strong> {formatDate(msg.createdAt)}
+                                                </div>
+                                                <div className="whitespace-pre-wrap text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert">
+                                                    {msg.content}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Delete Confirmation Dialog using shadcn/ui */}
+                <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the message.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel onClick={handleDeleteCancel}>Cancel</AlertDialogCancel>
+                             <AlertDialogAction
+                                 onClick={deleteMessage}
+                                 className={buttonVariants({ variant: "destructive" })}
+                             >
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
         </div>
-      )}
-    </div>
-  );
+    );
 }

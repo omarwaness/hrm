@@ -27,10 +27,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB Connected"))
 .catch((err) => console.error("MongoDB connection error:", err));
 
@@ -58,6 +55,9 @@ app.use("/api/user", require("./Routes/userRoutes"));
 app.use("/api/reports", require("./Routes/reportRoutes"));
 app.use("/api/resignation", require("./Routes/ResignationRoutes"));
 app.use("/api/ai", require("./Routes/chatRoutes"));
+app.use("/api/jobs", require("./Routes/jobRoutes"))
+app.use("/api/applications", require("./Routes/applicationRoutes"))
+
 
 // Make io available in routes/controllers
 app.set("io", io);
