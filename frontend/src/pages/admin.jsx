@@ -14,6 +14,7 @@ import SavedReports from "@/components/manager/savedReports";
 import {useNavigate} from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode'
 import ChatWidget from "@/components/ChatWidget";
+import Message from "@/components/manager/message";
 
 // Importing the components for each section
 
@@ -42,6 +43,8 @@ export default function Admin() {
         return <Account/>;
       case "Inbox":
         return <Inbox/>;
+      case "Message":
+        return <Message/>
       case "ViewEmpolyees":
         return <EmployeeList/>;
       case "AddEmpolyee":

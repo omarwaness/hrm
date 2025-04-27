@@ -109,7 +109,7 @@ export default function ManageApplications() {
                   </div>
 
                   <div className="flex space-x-2 mt-4 sm:mt-0">
-                    <Button variant="outline" className="border-green-500 text-green-600 hover:bg-green-50" onClick={() => handleAccept(app._id)}>
+                    <Button variant="outline" className="border-green-500 text-green-600 hover:bg-secondary" onClick={() => handleAccept(app._id)}>
                       Accept
                     </Button>
                     <Button variant="destructive" onClick={() => handleDeny(app._id)}>

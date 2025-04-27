@@ -1,7 +1,11 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Building, MapPin, Calendar, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {jwtDecode} from "jwt-decode";
 
 export default function JobDetails({
   id,
@@ -14,15 +18,51 @@ export default function JobDetails({
   requirements,
   responsibilities,
 }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
   // Format the posted date nicely
   const formattedDate = postedAt ? new Date(postedAt).toLocaleDateString() : "";
-  const navigate = useNavigate();
+
+  // Check if user is logged in
+  useEffect(() => {
+    let isMounted = true;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        if (isMounted) setIsLoggedIn(false);
+        return;
+      }
+
+      const decodedUser = jwtDecode(token);
+      if (decodedUser && isMounted) {
+        setIsLoggedIn(true);
+      }
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      localStorage.removeItem("token");
+      if (isMounted) setIsLoggedIn(false);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleApply = () => {
+    if (isLoggedIn) {
+      navigate(`/apply/${id}`);
+      //console.log(isLoggedIn)
+    } else {
+      navigate("/login"); // Redirect to the login page if not logged in
+      //console.log(isLoggedIn)
+    }
+  };
 
   return (
     <div className="rounded-lg p-6 shadow-sm bg-card w-full max-w-2xl mx-auto">
       <div className="mb-6">
         <h2 className="text-2xl font-bold mb-2">{title || "Job Title"}</h2>
-        
+
         <div className="flex flex-wrap gap-4 text-gray-600 text-sm mb-4">
           {company && (
             <div className="flex items-center gap-1">
@@ -87,7 +127,9 @@ export default function JobDetails({
       )}
 
       <div className="mt-6">
-        <Button className="w-full"  onClick={() => navigate(`/apply/${id}`)}>Apply Now</Button>
+        <Button className="w-full" onClick={handleApply}>
+          Apply Now
+        </Button>
       </div>
     </div>
   );
