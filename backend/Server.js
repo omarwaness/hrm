@@ -7,6 +7,7 @@ const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const http = require('http');
+const path = require('path');
 const { router: messageRouter, initSocket } = require('./Routes/messagesRoutes');
 
 const app = express();
@@ -57,6 +58,8 @@ app.use("/api/resignation", require("./Routes/ResignationRoutes"));
 app.use("/api/ai", require("./Routes/chatRoutes"));
 app.use("/api/jobs", require("./Routes/jobRoutes"))
 app.use("/api/applications", require("./Routes/applicationRoutes"))
+app.use('/uploads/cvs', express.static(path.join(__dirname, 'uploads', 'cvs')));
+
 
 
 // Make io available in routes/controllers

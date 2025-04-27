@@ -98,7 +98,7 @@ export default function ManageApplications() {
                     </div>
                     <div className="mt-1">
                       <a
-                        href={`/uploads/cv/${app.cv}`}
+                        href={`http://localhost:5000/uploads/cvs/${app.cv}`}  // Replace with your backend URL
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline text-sm"
