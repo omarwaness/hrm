@@ -90,61 +90,76 @@ const Account = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
         if (!user || !user.id) {
-             console.error("User or User ID is missing");
-             return; // Exit if user or user.id is not available
+          console.error("User or User ID is missing");
+          return;
         }
-        setLoading(true); // Indicate loading state
-
+      
+        setLoading(true);
+      
         try {
-            const res = await fetch(`http://localhost:5000/api/user/${user.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    firstName: formData.firstName,
-                    lastName: formData.lastName,
-                    email: formData.email,
-                    phoneNumber: formData.phone, // Ensure key matches API expectation ('phoneNumber')
-                    bio: formData.bio, // Include bio if editable
-                    // Avoid sending role/createdAt if they shouldn't be updated by the user
-                    // role: user.role,
-                    // createdAt: user.createAt
-                }),
-                credentials: 'include',
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                if (data.token) { // Check if token exists in response
-                    localStorage.setItem('token', data.token); // Update token
-                    try {
-                         const newUser = jwtDecode(data.token);
-                         setUser(newUser); // Update user state with fresh decoded token
-                         // Update userData state directly from formData after successful save
-                         setUserData({ ...formData });
-                    } catch (err) {
-                         console.error("Error decoding new token:", err);
-                          // Handle token decoding error - maybe force re-login?
-                    }
-                } else {
-                     // If no token in response, just update UI state based on submitted data
-                     setUserData({ ...formData });
-                }
-
-                setEditMode(false); // Exit edit mode
+          const res = await fetch(`http://localhost:5000/api/user/${user.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              email: formData.email,
+              phoneNumber: formData.phone,
+              bio: formData.bio,
+            }),
+            credentials: 'include',
+          });
+      
+          if (res.ok) {
+            const data = await res.json();
+      
+            if (data.token) {
+              // ✅ New token received — save it
+              localStorage.setItem('token', data.token);
+      
+              try {
+                const updatedUser = jwtDecode(data.token);
+      
+                // ✅ Update user state with the new token
+                setUser(updatedUser);
+      
+                // ✅ Also update form data from new user info if needed
+                setUserData({
+                  firstName: updatedUser.firstName || "",
+                  lastName: updatedUser.lastName || "",
+                  email: updatedUser.email || "",
+                  phone: updatedUser.phoneNumber || "",
+                  joinDate: updatedUser.createAt ? new Date(updatedUser.createAt) : new Date(),
+                  role: updatedUser.role || "",
+                  bio: updatedUser.bio || "Experienced software developer with 5+ years of experience.",
+                  profileImage: updatedUser.profileImage || "/placeholder.svg?height=100&width=100",
+                });
+      
+              } catch (decodeError) {
+                console.error("Error decoding new token:", decodeError);
+                // Fallback: clear token and redirect to login
+                localStorage.removeItem('token');
+                navigate('/login');
+              }
             } else {
-                 // Handle non-OK response (e.g., display error message)
-                 const errorData = await res.json();
-                 console.error("Failed to update user:", errorData.message || res.statusText);
-                 // Optionally: set an error state to display feedback to the user
+              console.warn("No new token received, keeping old data.");
             }
+      
+            setEditMode(false); // Exit edit mode
+      
+          } else {
+            const errorData = await res.json();
+            console.error("Failed to update user:", errorData.message || res.statusText);
+          }
         } catch (err) {
-            console.error("Error submitting user update:", err);
-            // Optionally: set an error state
+          console.error("Error submitting user update:", err);
         } finally {
-            setLoading(false); // End loading state
+          setLoading(false);
         }
-    };
+      };
+      
 
 
     const cancelEdit = () => {
@@ -372,7 +387,7 @@ const Account = () => {
                      <CardHeader>
                           {/* Use CardTitle and optionally CardDescription */}
                          <CardTitle className="text-destructive flex items-center gap-2">
-                              <AlertTriangle className="h-5 w-5"/> Danger Zone
+                              <AlertTriangle className="h-5 w-5"/> Alert
                          </CardTitle>
                           <CardDescription className="text-destructive/90">
                                Critical actions that require confirmation.

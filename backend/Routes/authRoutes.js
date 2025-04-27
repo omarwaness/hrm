@@ -11,14 +11,48 @@ const passport = require('passport')
 const router=express.Router();
 
  
-router.get('/google', passport.authenticate('google', { scope: ['profile','email'] }))
-router.get(
-  '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) => {
-    res.redirect('http://localhost:3000/employee')
-  }
-)
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback', (req, res, next) => {
+  passport.authenticate('google', (err, user, info) => {
+    if (err || !user) {
+      return res.redirect('/error');
+    }
+
+    try {
+      const token = user.token;
+
+      res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Redirecting...</title>
+            <script type="text/javascript">
+              (function() {
+                window.localStorage.setItem("token", ${JSON.stringify(token)});
+                window.location.href = "http://localhost:3000/jobs";
+              })();
+            </script>
+          </head>
+          <body>
+            <noscript>JavaScript is required to continue. Please enable it.</noscript>
+            <p>Redirecting... Please wait.</p>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error('Error during token setting:', error);
+      res.redirect('/error');
+    }
+  })(req, res, next);
+});
+
+
+
+
 
 
 
@@ -63,17 +97,15 @@ router.post("/login",async(req,res)=>{
         const user=await User.findOne({email});
         if(!user) return res.status(404).json({message:"User not found"});
         const isMatch=await crypt.compare(password,user.password);
-        if(!isMatch) return res.status(500).json({message:'password dosnèt match'});
+        if(!isMatch) return res.status(500).json({message:'password not match'});
         const token = generateJWT(user);
         res.cookie("token", token, { httpOnly: true });
         res.status(200).json({ message: "Login Successfully", token });
-        
-
-
-            }catch(err){
+    }catch(err){
                 res.status(500).json({message:err.message})
             }
 });
+
 router.post("/logout",async(req,res)=>{
     res.cookie("token","",{httpOnly:true,expires:new Date(0)});
     res.status(200).json({message:"Logged out"});
