@@ -1,208 +1,149 @@
-import React from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { 
-  Building2, 
-  Users, 
-  Briefcase, 
-  Calendar,
-  GraduationCap,
-  Clock,
-  Bell,
-  FileText
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
+import React, { useEffect, useState } from 'react';
+import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+import { User, CalendarDays, Briefcase } from "lucide-react";
 
 function Dashboard() {
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    joinDate: new Date(),
+    role: "",
+    bio: "",
+  });
 
-  // Mock data for company announcements
-  const announcements = [
-    {
-      title: "Company Meeting",
-      description: "Annual company meeting next Friday at 10 AM",
-      date: "Mar 15, 2024",
-      priority: "high"
-    },
-    {
-      title: "New Health Benefits",
-      description: "Updated health insurance coverage starting next month",
-      date: "Apr 1, 2024",
-      priority: "medium"
-    },
-    {
-      title: "Office Maintenance",
-      description: "Building maintenance scheduled for this weekend",
-      date: "Mar 16, 2024",
-      priority: "low"
-    }
-  ]
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Mock data for upcoming events
-  const upcomingEvents = [
-    {
-      title: "Team Building Event",
-      date: "Mar 20, 2024",
-      type: "Company Event"
-    },
-    {
-      title: "Training Session",
-      date: "Mar 22, 2024",
-      type: "Professional Development"
-    },
-    {
-      title: "Holiday",
-      date: "Mar 25, 2024",
-      type: "Public Holiday"
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      const decodedUser = jwtDecode(token);
+      if (isMounted) {
+        setUser(decodedUser);
+      }
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      localStorage.removeItem('token');
+      navigate('/login');
+    } finally {
+      if (isMounted) {
+        setLoading(false);
+      }
     }
-  ]
+    return () => { isMounted = false };
+  }, [navigate]);
+
+  useEffect(() => {
+    if (user) {
+      const initialData = {
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phone: user.phoneNumber || "",
+        joinDate: user.createAt ? new Date(user.createAt) : new Date(),
+        role: user.role || "",
+        bio: user.bio || "Experienced professional.",
+      };
+      setUserData(initialData);
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-1">
-      <div className="flex flex-1 flex-col gap-6 p-6">
-              {/* Dashboard Header */}
-              <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold tracking-tight">Company Dashboard</h1>
-                <p className="text-muted-foreground">
-                  Welcome to the HRM portal. Here's what's happening in the company.
-                </p>
-              </div>
+    <div>
+    // Main container still uses flex-col to stack sections vertically
+    <div className="flex flex-col flex-1 p-6 gap-6">
 
-              {/* Company Overview Stats */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Total Departments</CardTitle>
-                    <Building2 className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">8</div>
-                    <p className="text-xs text-muted-foreground">Core business units</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Total Employees</CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">245</div>
-                    <p className="text-xs text-muted-foreground">Across all departments</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Open Positions</CardTitle>
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">12</div>
-                    <p className="text-xs text-muted-foreground">Active job listings</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Training Programs</CardTitle>
-                    <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">5</div>
-                    <p className="text-xs text-muted-foreground">Active courses</p>
-                  </CardContent>
-                </Card>
-              </div>
+      {/* Welcome Heading */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight">
+            Welcome back, {userData.firstName}!
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Welcome to the HRM portal. Here's what's happening in the company.
+          </p>
+        </div>
+      </div>
 
-              {/* Important Announcements */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Company Announcements</CardTitle>
-                  <CardDescription>
-                    Important updates and notifications
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {announcements.map((announcement, index) => (
-                      <div key={index} className="flex items-start space-x-4">
-                        <Bell className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                        <div className="space-y-1 flex-1">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium">{announcement.title}</p>
-                            <Badge variant={
-                              announcement.priority === "high" ? "destructive" : 
-                              announcement.priority === "medium" ? "default" : 
-                              "secondary"
-                            }>
-                              {announcement.priority}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{announcement.description}</p>
-                          <p className="text-xs text-muted-foreground">{announcement.date}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+      {/* --- Row 1: Role and Joined Cards --- */}
+      {/* Use Grid layout for these two cards */}
+      {/* - grid-cols-1: Stack on small screens */}
+      {/* - md:grid-cols-2: Side-by-side (2 columns) on medium screens and up */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-              {/* Upcoming Events and Quick Links */}
-              <div className="grid gap-4 md:grid-cols-2">
-                {/* Upcoming Events */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Upcoming Events</CardTitle>
-                    <CardDescription>
-                      Schedule for the next few weeks
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {upcomingEvents.map((event, index) => (
-                        <div key={index} className="flex items-start space-x-4">
-                          <Calendar className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                          <div className="space-y-1">
-                            <p className="text-sm font-medium">{event.title}</p>
-                            <p className="text-xs text-muted-foreground">{event.date}</p>
-                            <Badge variant="outline">{event.type}</Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Quick Links */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Quick Links</CardTitle>
-                    <CardDescription>
-                      Frequently accessed resources
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-2">
-                      <Button variant="outline" className="w-full justify-start">
-                        <FileText className="mr-2 h-4 w-4" />
-                        Employee Handbook
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        Leave Management
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        <Clock className="mr-2 h-4 w-4" />
-                        Time Tracking
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
-                        <Users className="mr-2 h-4 w-4" />
-                        Directory
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+        {/* Role Card */}
+        <Card> {/* No col-span needed here, it takes 1 of 2 columns */}
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="space-y-1">
+              <CardTitle className="text-sm font-medium">Your Role</CardTitle>
             </div>
+            <Briefcase className="h-6 w-6 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{userData.role}</div>
+            <p className="text-xs text-muted-foreground">Active status</p>
+          </CardContent>
+        </Card>
+
+        {/* Joined Details Card */}
+        <Card> {/* No col-span needed here, it takes 1 of 2 columns */}
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="space-y-1">
+              <CardTitle className="text-sm font-medium">Joined</CardTitle>
+            </div>
+            <User className="h-6 w-6 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {userData.joinDate instanceof Date && !isNaN(userData.joinDate)
+                ? userData.joinDate.toLocaleDateString()
+                : 'N/A'}
+            </div>
+            <p className="text-xs text-muted-foreground">Phone: {userData.phone || 'N/A'}</p>
+          </CardContent>
+        </Card>
+      </div> {/* End of the first row grid */}
+    </div> 
+    <div>
+      {/* --- Row 2: Calendar Card --- */}
+      {/* This card sits below the grid above */}
+      <Card className="w-full"> {/* Ensure it takes full width */}
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div className="space-y-1">
+            <CardTitle className="text-sm font-medium">Calendar</CardTitle>
+          </div>
+          <CalendarDays className="h-6 w-6 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          {/* Center calendar or adjust padding as needed */}
+          <div className="flex justify-center">
+             <Calendar className="p-0" />
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  )
+    </div>
+  );
 }
 
-export default Dashboard
+export default Dashboard;

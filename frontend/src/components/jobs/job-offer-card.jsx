@@ -1,29 +1,12 @@
-import React from "react"
-import { Calendar, DollarSign } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DollarSign, Calendar } from "lucide-react";
 
-export default function JobOfferCard({
-  id = "1",
-  title = "Senior Frontend Developer",
-  salary = "$120,000 - $150,000",
-  postedDate = "2025-03-01",
-  description = "We're looking for an experienced Frontend Developer to join our team. You'll be responsible for building responsive web applications using React and Next.js.",
-  isSelected = false,
-  onSelect,
-}) {
-  const formattedDate = new Date(postedDate).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-
-  const daysAgo = Math.floor((new Date().getTime() - new Date(postedDate).getTime()) / (1000 * 3600 * 24))
-  const daysAgoText = daysAgo === 0 ? "Today" : daysAgo === 1 ? "Yesterday" : `${daysAgo} days ago`
-
+export default function JobOfferCard({ id, title, salary, description, daysAgoText, formattedDate, isSelected, onSelect }) {
   return (
     <button onClick={() => onSelect(id)} className="w-full text-left">
       <Card
+        key={id || `job-${title}`}
         className={`w-full transition-all duration-200 hover:shadow-md cursor-pointer ${
           isSelected ? "border-primary" : "hover:border-primary/50"
         }`}
@@ -54,5 +37,5 @@ export default function JobOfferCard({
         </CardContent>
       </Card>
     </button>
-  )
+  );
 }
