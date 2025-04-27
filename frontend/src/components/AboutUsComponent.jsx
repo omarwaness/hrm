@@ -57,7 +57,7 @@ export default function AboutUsComponent() {
             At the heart of our team's philosophy is a commitment to innovation and excellence.
             We leverage our diverse skill sets and expertise to create robust, scalable solutions
             that address real-world challenges. <strong>Keep going JN</strong> is more than just our motto;
-            it represents our dedication to persistent improvement and growth.
+            it represents our dedication to persistent improvement and growth. Special thanks to our leader MarMar; no one will read this. 
           </p>
         </div>
 

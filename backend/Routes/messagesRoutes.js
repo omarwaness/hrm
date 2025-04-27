@@ -103,16 +103,18 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
+
 router.get('/:email', async (req, res) => {
-    try {
+  try {
       const email = req.params.email;
-  
-      const messages = await Message.find({ reciever: email }).sort({ createdAt: -1 });
-  
+      
+      // Fix: Use "receiver" instead of "reciver"
+      const messages = await Message.find({ receiver: email }).sort({createdAt:-1});
+
       res.status(200).json(messages);
-    } catch (err) {
+  } catch (err) {
       res.status(500).json({ message: err.message });
-    }
+  }
 });
   
 
