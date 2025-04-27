@@ -1,291 +1,310 @@
-import React, { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useParams, useNavigate } from 'react-router-dom'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+"use client";
 
-function UpdateJob() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [selectedJobId, setSelectedJobId] = useState('');
+import { useState, useEffect } from "react";
+import { getAllJobs, updateJob } from "@/services/jobService"; // adjust path if needed
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Textarea } from "@/components/ui/textarea";
+import { Search, CheckCircle } from "lucide-react";
+
+export default function UpdateJob() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [jobs, setJobs] = useState([]);
-  const [jobData, setJobData] = useState({
-    title: '',
-    description: '',
-    requirements: '',
-    salaryRange: '',
-    location: '',
-    department: '',
-    employmentType: '',
-    experienceLevel: '',
-    education: '',
-    skills: '',
-    benefits: ''
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    salary: "",
+    description: "",
+    requirements: "",
+    responsibilities: "",
   });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    // Simulate fetching jobs list
-    setTimeout(() => {
-      const sampleJobs = [
-        {
-          id: '1',
-          title: 'Senior Frontend Developer',
-          salary: '$80,000 - $120,000',
-          description: 'We are looking for an experienced frontend developer to join our team.',
-        },
-        {
-          id: '2',
-          title: 'Backend Developer',
-          salary: '$70,000 - $100,000',
-          description: 'Looking for a backend developer with Node.js experience.',
-        },
-        {
-          id: '3',
-          title: 'UI/UX Designer',
-          salary: '$60,000 - $90,000',
-          description: 'Join our design team to create beautiful user interfaces.',
-        }
-      ];
-      
-      setJobs(sampleJobs);
-      setLoading(false);
-    }, 1000);
+    async function fetchJobs() {
+      const data = await getAllJobs();
+      setJobs(data);
+    }
+    fetchJobs();
   }, []);
 
-  const handleJobSelect = (jobId) => {
-    setSelectedJobId(jobId);
-    const selectedJob = jobs.find(job => job.id === jobId);
-    if (selectedJob) {
-      setJobData({
-        title: selectedJob.title,
-        description: selectedJob.description,
-        requirements: 'Proficiency in React, TypeScript, and modern JavaScript.',
-        salaryRange: selectedJob.salary,
-        location: 'New York, NY',
-        department: 'Engineering',
-        employmentType: 'Full-time',
-        experienceLevel: 'Senior',
-        education: 'Bachelor\'s degree in Computer Science or related field',
-        skills: 'React, JavaScript, TypeScript, CSS',
-        benefits: 'Health insurance, 401k, flexible working hours'
-      });
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
+      setIsSearching(false);
+      return;
     }
+    const results = jobs.filter((job) =>
+      job.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setSearchResults(results);
+    setIsSearching(true);
+  };
+
+  const handleSelectJob = (job) => {
+    setSelectedJob(job);
+    setFormData({
+      title: job.title,
+      salary: job.salary,
+      description: job.description,
+      requirements: job.requirements.join("\n"),
+      responsibilities: job.responsibilities.join("\n"),
+    });
+    setErrors({});
+    setShowSuccess(false);
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.title.trim()) newErrors.title = "Title is required.";
+    if (!formData.salary) newErrors.salary = "Salary is required.";
+    if (!formData.description.trim()) newErrors.description = "Description is required.";
+    if (!formData.requirements.trim()) newErrors.requirements = "Requirements are required.";
+    if (!formData.responsibilities.trim()) newErrors.responsibilities = "Responsibilities are required.";
+    return newErrors;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setJobData({
-      ...jobData,
-      [name]: value
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Updated job data:', jobData);
-    alert('Job updated successfully!');
-    navigate(-1);
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await updateJob(selectedJob._id, {
+        ...formData,
+        salary: Number(formData.salary),
+        requirements: formData.requirements.split("\n").map((req) => req.trim()).filter(Boolean),
+        responsibilities: formData.responsibilities.split("\n").map((res) => res.trim()).filter(Boolean),
+      });
+      setShowSuccess(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-slate-800 dark:text-slate-200">Loading jobs...</p>
-      </div>
-    );
-  }
+  const getAllJobsSorted = () => {
+    return [...jobs].sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
+  };
 
   return (
-    <div className="container mx-auto py-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">Update Job Posting</CardTitle>
+    <div className="w-full">
+      {/* Search Section */}
+      <Card className="w-full mb-6 shadow-md">
+        <CardHeader className="bg-slate-50 dark:bg-black">
+          <CardTitle className="text-xl">Find Job</CardTitle>
+          <CardDescription>
+            Search for a job to update its information
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="mb-6">
-            <Label htmlFor="job-select" className="text-slate-800 dark:text-slate-200">Select Job to Update</Label>
-            <Select value={selectedJobId} onValueChange={handleJobSelect}>
-              <SelectTrigger id="job-select" className="w-full">
-                <SelectValue placeholder="Choose a job to update" />
-              </SelectTrigger>
-              <SelectContent>
-                {jobs.map((job) => (
-                  <SelectItem key={job.id} value={job.id}>
-                    {job.title} - {job.salary}
-                  </SelectItem>
+        <CardContent className="p-4">
+          <form onSubmit={handleSearch} className="flex items-center space-x-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search by job title..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Button type="submit">Search</Button>
+          </form>
+
+          {isSearching ? (
+            searchResults.length > 0 ? (
+              <div className="mt-4 border rounded-md">
+                <div className="p-2 bg-slate-50 dark:bg-black font-medium">Search Results</div>
+                <div className="divide-y">
+                  {searchResults.map((job) => (
+                    <div
+                      key={job._id}
+                      className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex justify-between items-center"
+                      onClick={() => handleSelectJob(job)}
+                    >
+                      <div>
+                        <div className="font-medium">{job.title}</div>
+                        <div className="text-sm text-muted-foreground">${job.salary}</div>
+                      </div>
+                      <Button variant="outline" size="sm">Select</Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 p-3 bg-amber-50 text-amber-800 rounded-md dark:bg-amber-950 dark:text-amber-200">
+                No jobs found matching your search.
+              </div>
+            )
+          ) : (
+            <div className="mt-4 border rounded-md">
+              <div className="p-2 bg-slate-50 dark:bg-black font-medium">All Jobs</div>
+              <div className="divide-y max-h-60 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+                {getAllJobsSorted().map((job) => (
+                  <div
+                    key={job._id}
+                    className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex justify-between items-center"
+                    onClick={() => handleSelectJob(job)}
+                  >
+                    <div>
+                      <div className="font-medium">{job.title}</div>
+                      <div className="text-sm text-muted-foreground">${job.salary}</div>
+                    </div>
+                    <Button variant="outline" size="sm">Select</Button>
+                  </div>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {selectedJobId && (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="title" className="text-slate-800 dark:text-slate-200">Job Title</Label>
-                <Input 
-                  id="title"
-                  name="title"
-                  value={jobData.title}
-                  onChange={handleChange}
-                  placeholder="Enter job title"
-                  required
-                />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-slate-800 dark:text-slate-200">Job Description</Label>
-                <Textarea 
-                  id="description"
-                  name="description"
-                  value={jobData.description}
-                  onChange={handleChange}
-                  placeholder="Enter detailed job description"
-                  className="min-h-32"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="requirements" className="text-slate-800 dark:text-slate-200">Job Requirements</Label>
-                <Textarea 
-                  id="requirements"
-                  name="requirements"
-                  value={jobData.requirements}
-                  onChange={handleChange}
-                  placeholder="Enter job requirements"
-                  className="min-h-24"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="salaryRange" className="text-slate-800 dark:text-slate-200">Salary Range</Label>
-                  <Input 
-                    id="salaryRange"
-                    name="salaryRange"
-                    value={jobData.salaryRange}
-                    onChange={handleChange}
-                    placeholder="e.g. $80,000 - $120,000"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="location" className="text-slate-800 dark:text-slate-200">Location</Label>
-                  <Input 
-                    id="location"
-                    name="location"
-                    value={jobData.location}
-                    onChange={handleChange}
-                    placeholder="e.g. New York, NY"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="department" className="text-slate-800 dark:text-slate-200">Department</Label>
-                  <Input 
-                    id="department"
-                    name="department"
-                    value={jobData.department}
-                    onChange={handleChange}
-                    placeholder="e.g. Engineering"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="employmentType" className="text-slate-800 dark:text-slate-200">Employment Type</Label>
-                  <Input 
-                    id="employmentType"
-                    name="employmentType"
-                    value={jobData.employmentType}
-                    onChange={handleChange}
-                    placeholder="e.g. Full-time, Part-time"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="experienceLevel" className="text-slate-800 dark:text-slate-200">Experience Level</Label>
-                <Input 
-                  id="experienceLevel"
-                  name="experienceLevel"
-                  value={jobData.experienceLevel}
-                  onChange={handleChange}
-                  placeholder="e.g. Entry, Mid, Senior"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="education" className="text-slate-800 dark:text-slate-200">Education Requirements</Label>
-                <Input 
-                  id="education"
-                  name="education"
-                  value={jobData.education}
-                  onChange={handleChange}
-                  placeholder="e.g. Bachelor's degree"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="skills" className="text-slate-800 dark:text-slate-200">Required Skills</Label>
-                <Input 
-                  id="skills"
-                  name="skills"
-                  value={jobData.skills}
-                  onChange={handleChange}
-                  placeholder="e.g. React, JavaScript, TypeScript"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="benefits" className="text-slate-800 dark:text-slate-200">Benefits</Label>
-                <Textarea 
-                  id="benefits"
-                  name="benefits"
-                  value={jobData.benefits}
-                  onChange={handleChange}
-                  placeholder="List job benefits"
-                  className="min-h-24"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => navigate(-1)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  Update Job
-                </Button>
-              </div>
-            </form>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Update Form Section */}
+      {selectedJob && (
+        <Card className="w-full shadow-lg border-2">
+          <CardHeader className="p-6 bg-slate-50 dark:bg-black">
+            <CardTitle className="text-2xl font-bold">Update Job: {selectedJob.title}</CardTitle>
+            <CardDescription className="text-base mt-2">
+              Update the job information below
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            {showSuccess && (
+              <Alert className="mb-6 bg-green-50 text-green-800 border-green-200 p-4 rounded-lg">
+                <div className="flex items-center">
+                  <CheckCircle className="h-6 w-6 mr-3 text-green-500" />
+                  <AlertDescription className="text-lg font-medium">
+                    Job information was successfully updated.
+                  </AlertDescription>
+                </div>
+              </Alert>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="title" className={`text-base ${errors.title ? "text-red-500" : ""}`}>
+                    Job Title
+                  </Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    placeholder="Software Engineer"
+                    className={`p-4 h-12 text-base ${errors.title ? "border-red-500" : ""}`}
+                    value={formData.title}
+                    onChange={handleChange}
+                  />
+                  {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="salary" className={`text-base ${errors.salary ? "text-red-500" : ""}`}>
+                    Salary
+                  </Label>
+                  <Input
+                    id="salary"
+                    name="salary"
+                    type="number"
+                    placeholder="50000"
+                    className={`p-4 h-12 text-base ${errors.salary ? "border-red-500" : ""}`}
+                    value={formData.salary}
+                    onChange={handleChange}
+                  />
+                  {errors.salary && <p className="text-red-500 text-sm mt-1">{errors.salary}</p>}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description" className={`text-base ${errors.description ? "text-red-500" : ""}`}>
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  placeholder="Job description here..."
+                  className={`p-4 text-base ${errors.description ? "border-red-500" : ""}`}
+                  value={formData.description}
+                  onChange={handleChange}
+                />
+                {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="requirements" className={`text-base ${errors.requirements ? "text-red-500" : ""}`}>
+                  Requirements (one per line)
+                </Label>
+                <Textarea
+                  id="requirements"
+                  name="requirements"
+                  placeholder="Requirement 1\nRequirement 2"
+                  className={`p-4 text-base ${errors.requirements ? "border-red-500" : ""}`}
+                  value={formData.requirements}
+                  onChange={handleChange}
+                />
+                {errors.requirements && <p className="text-red-500 text-sm mt-1">{errors.requirements}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="responsibilities" className={`text-base ${errors.responsibilities ? "text-red-500" : ""}`}>
+                  Responsibilities (one per line)
+                </Label>
+                <Textarea
+                  id="responsibilities"
+                  name="responsibilities"
+                  placeholder="Responsibility 1\nResponsibility 2"
+                  className={`p-4 text-base ${errors.responsibilities ? "border-red-500" : ""}`}
+                  value={formData.responsibilities}
+                  onChange={handleChange}
+                />
+                {errors.responsibilities && <p className="text-red-500 text-sm mt-1">{errors.responsibilities}</p>}
+              </div>
+
+              <div className="pt-4 flex space-x-4">
+                <Button
+                  type="submit"
+                  className="h-12 text-base font-semibold bg-primary hover:bg-primary/90 flex-1"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Updating..." : "Update Job"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 text-base font-semibold flex-1"
+                  onClick={() => setSelectedJob(null)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+          <CardFooter className="bg-slate-50 p-4 flex justify-center dark:bg-black">
+            <p className="text-sm text-slate-500 dark:text-slate-200">
+              All job information will be securely stored
+            </p>
+          </CardFooter>
+        </Card>
+      )}
     </div>
   );
 }
-
-export default UpdateJob

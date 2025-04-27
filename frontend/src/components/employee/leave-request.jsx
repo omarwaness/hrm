@@ -1,4 +1,5 @@
 "use client"
+
 import React, { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
@@ -29,9 +30,7 @@ export default function LeaveRequest() {
   }, [status.type])
 
   const handleSubmit = async (e) => {
-
     e.preventDefault()
-    setSuccessMessage("")
     setIsLoading(true)
     setStatus({ type: null, message: "" })
 
@@ -56,7 +55,7 @@ export default function LeaveRequest() {
       })
 
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.message || "Failed to submit leave request")
       }
@@ -70,6 +69,7 @@ export default function LeaveRequest() {
     } finally {
       setIsLoading(false)
     }
+  }
 
   if (isLoading) return <Loading />
 
@@ -81,9 +81,15 @@ export default function LeaveRequest() {
           <p className="text-muted-foreground">Submit your leave dates and reason below.</p>
         </div>
 
-        {successMessage && (
+        {status.type === 'success' && (
           <div className="rounded-md bg-green-100 text-green-800 px-4 py-3 text-center font-medium shadow">
-            {successMessage}
+            {status.message}
+          </div>
+        )}
+
+        {status.type === 'error' && (
+          <div className="rounded-md bg-red-100 text-red-800 px-4 py-3 text-center font-medium shadow">
+            {status.message}
           </div>
         )}
 
@@ -93,22 +99,8 @@ export default function LeaveRequest() {
             <CardDescription>Choose your dates and fill in the reason for your leave.</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Status Messages */}
-            {status.type === 'success' && (
-              <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                {status.message}
-              </div>
-            )}
-
-            {status.type === 'error' && (
-              <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                {status.message}
-              </div>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-4 sm:grid-cols-2">
-                {/* From Date */}
                 <div className="space-y-2">
                   <Label>From Date</Label>
                   <Popover>
@@ -129,14 +121,13 @@ export default function LeaveRequest() {
                         mode="single"
                         selected={fromDate}
                         onSelect={setFromDate}
-                        disabled={(date) => date < toDate}
+                        disabled={(date) => toDate && date > toDate}
                         initialFocus
                       />
                     </PopoverContent>
                   </Popover>
                 </div>
 
-                {/* To Date */}
                 <div className="space-y-2">
                   <Label>To Date</Label>
                   <Popover>
@@ -157,7 +148,7 @@ export default function LeaveRequest() {
                         mode="single"
                         selected={toDate}
                         onSelect={setToDate}
-                        disabled={(date) => date < fromDate}
+                        disabled={(date) => fromDate && date < fromDate}
                         initialFocus
                       />
                     </PopoverContent>
@@ -165,7 +156,6 @@ export default function LeaveRequest() {
                 </div>
               </div>
 
-              {/* Reason */}
               <div className="space-y-2">
                 <Label htmlFor="reason">Reason for Leave</Label>
                 <Textarea
@@ -197,5 +187,4 @@ export default function LeaveRequest() {
       </div>
     </div>
   )
-}
 }

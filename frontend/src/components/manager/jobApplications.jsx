@@ -1,399 +1,135 @@
-import React, { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
+"use client";
 
-function JobApplications() {
+import { useEffect, useState } from "react";
+import { getAllApplications } from "@/services/applicationService";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle, XCircle } from "lucide-react";
+
+export default function ManageApplications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedApplication, setSelectedApplication] = useState(null);
-  const [filter, setFilter] = useState("all");
-  const [openSheet, setOpenSheet] = useState(false);
-  const [openAlertDialog, setOpenAlertDialog] = useState(false);
-  const [actionType, setActionType] = useState("");
-  
+  const [actionStatus, setActionStatus] = useState({ type: "", message: "" });
+
   useEffect(() => {
-    // Simulate fetching applications data
-    setTimeout(() => {
-      const mockApplications = [
-        {
-          id: "app-001",
-          applicantName: "John Doe",
-          email: "john.doe@example.com",
-          phone: "+1 (555) 123-4567",
-          jobTitle: "Senior Frontend Developer",
-          department: "Engineering",
-          applyDate: "2023-05-15",
-          status: "pending",
-          resume: "https://example.com/resume/johndoe.pdf",
-          coverLetter: "I am excited to apply for this position...",
-          experience: "5 years of experience in frontend development",
-          education: "Bachelor's in Computer Science, University of Technology",
-          skills: ["React", "JavaScript", "TypeScript", "CSS", "HTML"],
-          photo: "",
-        },
-        {
-          id: "app-002",
-          applicantName: "Jane Smith",
-          email: "jane.smith@example.com",
-          phone: "+1 (555) 234-5678",
-          jobTitle: "Backend Developer",
-          department: "Engineering",
-          applyDate: "2023-05-16",
-          status: "pending",
-          resume: "https://example.com/resume/janesmith.pdf",
-          coverLetter: "With my strong background in Node.js...",
-          experience: "3 years of experience in backend development",
-          education: "Master's in Software Engineering, State University",
-          skills: ["Node.js", "Express", "MongoDB", "SQL", "API Design"],
-          photo: "",
-        },
-        {
-          id: "app-003",
-          applicantName: "Robert Johnson",
-          email: "robert.johnson@example.com",
-          phone: "+1 (555) 345-6789",
-          jobTitle: "UI/UX Designer",
-          department: "Design",
-          applyDate: "2023-05-17",
-          status: "approved",
-          resume: "https://example.com/resume/robertjohnson.pdf",
-          coverLetter: "I'm passionate about creating intuitive user interfaces...",
-          experience: "4 years of experience in UI/UX design",
-          education: "Bachelor's in Graphic Design, Art Institute",
-          skills: ["Figma", "Adobe XD", "Sketch", "UI Design", "User Research"],
-          photo: "",
-        },
-        {
-          id: "app-004",
-          applicantName: "Emily Davis",
-          email: "emily.davis@example.com",
-          phone: "+1 (555) 456-7890",
-          jobTitle: "Senior Frontend Developer",
-          department: "Engineering",
-          applyDate: "2023-05-18",
-          status: "rejected",
-          resume: "https://example.com/resume/emilydavis.pdf",
-          coverLetter: "I believe my expertise in React would be valuable...",
-          experience: "6 years of experience in frontend development",
-          education: "Master's in Computer Science, Tech University",
-          skills: ["React", "Redux", "JavaScript", "TypeScript", "CSS"],
-          photo: "",
-        },
-      ];
-      
-      setApplications(mockApplications);
-      setLoading(false);
-    }, 1000);
+    const fetchApplications = async () => {
+      try {
+        const data = await getAllApplications();
+        setApplications(data);
+      } catch (error) {
+        console.error("Error loading applications:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
   }, []);
 
-  const handleViewApplication = (application) => {
-    setSelectedApplication(application);
-    setOpenSheet(true);
+  const handleAccept = async (applicationId) => {
+    try {
+      // Here you will later send an email to the applicant
+      console.log("Accepting application:", applicationId);
+      setActionStatus({ type: "success", message: "Application accepted successfully." });
+
+      // Remove the accepted application from the list
+      setApplications((prev) => prev.filter((app) => app._id !== applicationId));
+    } catch (error) {
+      console.error("Error accepting application:", error);
+      setActionStatus({ type: "error", message: "Failed to accept application." });
+    }
   };
 
-  const handleStatusChange = (newStatus) => {
-    setActionType(newStatus);
-    setOpenAlertDialog(true);
-  };
+  const handleDeny = async (applicationId) => {
+    try {
+      // Here you will later send a rejection email
+      console.log("Denying application:", applicationId);
+      setActionStatus({ type: "success", message: "Application denied successfully." });
 
-  const confirmStatusChange = () => {
-    if (!selectedApplication) return;
-    
-    const updatedApplications = applications.map(app => 
-      app.id === selectedApplication.id 
-        ? { ...app, status: actionType } 
-        : app
-    );
-    
-    setApplications(updatedApplications);
-    setSelectedApplication(prev => ({ ...prev, status: actionType }));
-    setOpenAlertDialog(false);
-  };
-
-  const filteredApplications = filter === "all" 
-    ? applications 
-    : applications.filter(app => app.status === filter);
-
-  const getStatusBadge = (status) => {
-    switch(status) {
-      case "pending":
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-      case "approved":
-        return <Badge variant="outline" className="bg-green-100 text-green-800">Approved</Badge>;
-      case "rejected":
-        return <Badge variant="outline" className="bg-red-100 text-red-800">Rejected</Badge>;
-      default:
-        return <Badge variant="outline">Unknown</Badge>;
+      // Remove the denied application from the list
+      setApplications((prev) => prev.filter((app) => app._id !== applicationId));
+    } catch (error) {
+      console.error("Error denying application:", error);
+      setActionStatus({ type: "error", message: "Failed to deny application." });
     }
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-slate-800 dark:text-slate-200">Loading applications...</p>
-      </div>
-    );
+    return <div className="p-6 text-center text-lg">Loading applications...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Job Applications</h2>
-        <div className="flex items-center gap-4">
-          <Label htmlFor="filter-status" className="text-slate-800 dark:text-slate-200">Filter by status:</Label>
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger id="filter-status" className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Applications</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+    <div className="w-full">
+      <Card className="w-full shadow-md">
+        <CardHeader className="bg-slate-50 dark:bg-black">
+          <CardTitle className="text-2xl">Manage Job Applications</CardTitle>
+          <CardDescription>Review and take action on job applications.</CardDescription>
+        </CardHeader>
 
-      {filteredApplications.length === 0 ? (
-        <Card>
-          <CardContent className="flex justify-center items-center h-64">
-            <p className="text-slate-500 dark:text-slate-400">No applications found.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {filteredApplications.map((application) => (
-            <Card key={application.id} className="overflow-hidden">
-              <CardContent className="p-0">
-                <div className="flex items-center gap-4 p-6">
-                  <Avatar className="h-12 w-12">
-                    {application.photo ? (
-                      <AvatarImage src={application.photo} alt={application.applicantName} />
-                    ) : (
-                      <AvatarFallback>
-                        {application.applicantName.split(' ').map(name => name[0]).join('')}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex justify-between">
-                      <h3 className="font-semibold text-slate-900 dark:text-white">{application.applicantName}</h3>
-                      <div>{getStatusBadge(application.status)}</div>
-                    </div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{application.email} • {application.phone}</p>
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Applied for: {application.jobTitle}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Applied on: {application.applyDate}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="border-t px-6 py-4 flex justify-end">
-                  <Button variant="outline" onClick={() => handleViewApplication(application)}>
-                    View Application
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Application Detail Sheet */}
-      <Sheet open={openSheet} onOpenChange={setOpenSheet}>
-        <SheetContent className="sm:max-w-2xl overflow-y-auto">
-          {selectedApplication && (
-            <>
-              <SheetHeader className="pb-4">
-                <SheetTitle className="text-2xl font-bold text-slate-900 dark:text-white">Application Details</SheetTitle>
-                <SheetDescription className="text-base text-slate-600 dark:text-slate-200">
-                  Review application for {selectedApplication.jobTitle}
-                </SheetDescription>
-              </SheetHeader>
-              
-              <div className="space-y-6 py-4">
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-16 w-16">
-                    {selectedApplication.photo ? (
-                      <AvatarImage src={selectedApplication.photo} alt={selectedApplication.applicantName} />
-                    ) : (
-                      <AvatarFallback className="text-lg">
-                        {selectedApplication.applicantName.split(' ').map(name => name[0]).join('')}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div>
-                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{selectedApplication.applicantName}</h3>
-                    <p className="text-slate-500 dark:text-slate-400">{selectedApplication.email}</p>
-                    <p className="text-slate-500 dark:text-slate-400">{selectedApplication.phone}</p>
-                  </div>
-                  <div className="ml-auto">
-                    {getStatusBadge(selectedApplication.status)}
-                  </div>
-                </div>
-                
-                <div className="grid gap-4 border rounded-lg p-4">
-                  <h4 className="font-semibold text-slate-900 dark:text-white">Application Summary</h4>
-                  <div className="grid gap-2">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Position:</span>
-                      <span className="font-medium text-slate-900 dark:text-white">{selectedApplication.jobTitle}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Department:</span>
-                      <span className="text-slate-800 dark:text-slate-200">{selectedApplication.department}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Applied On:</span>
-                      <span className="text-slate-800 dark:text-slate-200">{selectedApplication.applyDate}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-slate-900 dark:text-white">Cover Letter</h4>
-                  <div className="border rounded-lg p-4">
-                    <p className="whitespace-pre-line text-slate-800 dark:text-slate-200">{selectedApplication.coverLetter}</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-slate-900 dark:text-white">Experience</h4>
-                  <div className="border rounded-lg p-4">
-                    <p className="text-slate-800 dark:text-slate-200">{selectedApplication.experience}</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-slate-900 dark:text-white">Education</h4>
-                  <div className="border rounded-lg p-4">
-                    <p className="text-slate-800 dark:text-slate-200">{selectedApplication.education}</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-slate-900 dark:text-white">Skills</h4>
-                  <div className="border rounded-lg p-4 flex flex-wrap gap-2">
-                    {selectedApplication.skills.map((skill, index) => (
-                      <Badge key={index} variant="secondary">{skill}</Badge>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-slate-900 dark:text-white">Resume</h4>
-                  <div className="border rounded-lg p-4">
-                    <a 
-                      href={selectedApplication.resume} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      Download Resume
-                    </a>
-                  </div>
-                </div>
+        <CardContent className="p-4 space-y-4">
+          {actionStatus.message && (
+            <Alert className={`mb-4 ${actionStatus.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+              <div className="flex items-center">
+                {actionStatus.type === "success" ? (
+                  <CheckCircle className="h-6 w-6 mr-3 text-green-500" />
+                ) : (
+                  <XCircle className="h-6 w-6 mr-3 text-red-500" />
+                )}
+                <AlertDescription>{actionStatus.message}</AlertDescription>
               </div>
-              
-              <SheetFooter className="border-t pt-4">
-                <div className="flex w-full justify-between">
-                  {selectedApplication.status === "pending" && (
-                    <>
-                      <Button 
-                        variant="destructive" 
-                        onClick={() => handleStatusChange("rejected")}
-                      >
-                        Reject Application
-                      </Button>
-                      <Button 
-                        onClick={() => handleStatusChange("approved")}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Approve Application
-                      </Button>
-                    </>
-                  )}
-                  {selectedApplication.status !== "pending" && (
-                    <>
-                      <div></div>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => handleStatusChange("pending")}
-                      >
-                        Reset to Pending
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </SheetFooter>
-            </>
+            </Alert>
           )}
-        </SheetContent>
-      </Sheet>
 
-      {/* Confirmation Dialog */}
-      <AlertDialog open={openAlertDialog} onOpenChange={setOpenAlertDialog}>
-        <AlertDialogContent onClose={() => setOpenAlertDialog(false)}>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {actionType === "approved" 
-                ? "Approve Application" 
-                : actionType === "rejected" 
-                  ? "Reject Application" 
-                  : "Reset Application Status"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {actionType === "approved" 
-                ? "Are you sure you want to approve this application? This will mark the applicant as approved and potentially trigger notification emails." 
-                : actionType === "rejected" 
-                  ? "Are you sure you want to reject this application? This will mark the applicant as rejected and potentially trigger notification emails."
-                  : "Are you sure you want to reset this application to pending status?"}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setOpenAlertDialog(false)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmStatusChange}>
-              {actionType === "approved" 
-                ? "Approve" 
-                : actionType === "rejected" 
-                  ? "Reject" 
-                  : "Reset"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          {applications.length > 0 ? (
+            <div className="space-y-4">
+              {applications.map((app) => (
+                <div
+                  key={app._id}
+                  className="border p-4 rounded-lg shadow-sm flex flex-col sm:flex-row sm:justify-between sm:items-center hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  <div className="space-y-1">
+                    <div className="font-medium text-lg">{app.email}</div>
+                    <div className="text-sm text-muted-foreground">
+                      Applied for: <span className="font-semibold">{app.job?.title || "Unknown Job"}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Applied at: {new Date(app.appliedAt).toLocaleDateString()}
+                    </div>
+                    <div className="mt-1">
+                      <a
+                        href={`/uploads/cv/${app.cv}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline text-sm"
+                      >
+                        View CV
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-2 mt-4 sm:mt-0">
+                    <Button variant="outline" className="border-green-500 text-green-600 hover:bg-green-50" onClick={() => handleAccept(app._id)}>
+                      Accept
+                    </Button>
+                    <Button variant="destructive" onClick={() => handleDeny(app._id)}>
+                      Deny
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-slate-500 p-6">
+              No job applications found.
+            </div>
+          )}
+        </CardContent>
+
+        <CardFooter className="bg-slate-50 p-4 flex justify-center dark:bg-black">
+          <p className="text-sm text-slate-500 dark:text-slate-200">Keep applicants informed about their status.</p>
+        </CardFooter>
+      </Card>
     </div>
-  )
+  );
 }
-
-export default JobApplications
