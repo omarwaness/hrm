@@ -29,6 +29,8 @@ export function LoginForm({
         return "/employee";
       case "HR":
         return "/manager";
+        case "Conditate":
+          return "/jobs";
       default:
         return '/login';
     }
@@ -57,7 +59,7 @@ export function LoginForm({
         const user = jwtDecode(data.token);
         console.log(user.role);
         const render = renderPage(user.role);
-        console.log(user);
+        /*console.log(user);*/
         navigate(render);
       } else {
         setErrorMessage(data.message);

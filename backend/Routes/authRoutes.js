@@ -11,14 +11,48 @@ const passport = require('passport')
 const router=express.Router();
 
  
-router.get('/google', passport.authenticate('google', { scope: ['profile','email'] }))
-router.get(
-  '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) => {
-    res.redirect('http://localhost:3000/employee')
-  }
-)
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback', (req, res, next) => {
+  passport.authenticate('google', (err, user, info) => {
+    if (err || !user) {
+      return res.redirect('/error');
+    }
+
+    try {
+      const token = user.token;
+
+      res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Redirecting...</title>
+            <script type="text/javascript">
+              (function() {
+                window.localStorage.setItem("token", ${JSON.stringify(token)});
+                window.location.href = "http://localhost:3000/jobs";
+              })();
+            </script>
+          </head>
+          <body>
+            <noscript>JavaScript is required to continue. Please enable it.</noscript>
+            <p>Redirecting... Please wait.</p>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error('Error during token setting:', error);
+      res.redirect('/error');
+    }
+  })(req, res, next);
+});
+
+
+
+
 
 
 

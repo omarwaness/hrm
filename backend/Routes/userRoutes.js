@@ -31,34 +31,42 @@ function generateToken(id,firstName,lastName,email,phoneNumber,role,createdAt){
 
 }
 
-router.put('/:_id',async(req,res)=>{
-    try{
-        
-        const {firstName,lastName,email,phoneNumber,role,createdAt}=req.body;
-        let user=await User.findOne({email});
-        console.log("cc")       
-
-        const updatedUser=await User.findByIdAndUpdate(
-            req.params._id,{
-            firstName:firstName,
-            lastName:lastName,
-            email:email,
-            phoneNumber:phoneNumber,
-            role:role,
-            createdAt:createdAt
-        },{new:true})
-        
-        const token=generateToken(req.params._id,firstName,lastName,email,phoneNumber,role,createdAt)
-        res.cookie("token", token, { httpOnly: true });
-        res.status(200).json({message:'updated succefully',token})
-
-    
-
-    }catch(err){
-        res.status(500).json({message:err.message})
+router.put('/:_id', async (req, res) => {
+    try {
+      const { firstName, lastName, email, phoneNumber, role, createdAt } = req.body;
+  
+      // Update the user by _id
+      const updatedUser = await User.findByIdAndUpdate(
+        req.params._id,
+        { firstName, lastName, email, phoneNumber, role, createdAt },
+        { new: true } // Ensure you get the updated document
+      );
+  
+      // If user not found
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      // Generate new token with updated info
+      const token = generateToken(
+        updatedUser._id,
+        updatedUser.firstName,
+        updatedUser.lastName,
+        updatedUser.email,
+        updatedUser.phoneNumber,
+        updatedUser.role,
+        updatedUser.createdAt
+      );
+  
+      // Send the new token back in the response
+      res.cookie("token", token, { httpOnly: true });
+      res.status(200).json({ message: "Updated successfully", token });
+  
+    } catch (err) {
+      res.status(500).json({ message: err.message });
     }
-})
-
+  });
+  
 // GET user by email with selected fields
 router.get("/:email", async (req, res) => {
     try {
