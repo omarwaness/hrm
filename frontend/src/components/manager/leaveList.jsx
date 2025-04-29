@@ -255,7 +255,7 @@ const LeaveRequestList = () => {
                               request.status === "pending"
                                 ? "secondary"
                                 : request.status === "approved"
-                                ? "outline"
+                                ? "default"
                                 : "destructive"
                             }
                           >
