@@ -1,7 +1,4 @@
-import axios from "axios";
-
 const API_BASE_URL = "http://localhost:5000/api/user"; // Adjust base URL as needed
-
 
 /**
  * Get user by email
@@ -10,13 +7,19 @@ const API_BASE_URL = "http://localhost:5000/api/user"; // Adjust base URL as nee
  */
 export const getUserByEmail = async (email) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/${email}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/${email}`);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw data;
+    }
+
+    return data;
   } catch (error) {
-    throw error.response ? error.response.data : { message: "Network error" };
+    throw error.message ? error : { message: "Network error" };
   }
 };
-
 
 /**
  * Get all users with role 'employee'
@@ -24,18 +27,39 @@ export const getUserByEmail = async (email) => {
  */
 export const getEmployees = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/role/employee`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/role/employee`);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw data;
+    }
+
+    return data;
   } catch (error) {
-    throw error.response ? error.response.data : { message: "Network error" };
+    throw error.message ? error : { message: "Network error" };
   }
 };
 
+/**
+ * Delete an employee by ID
+ * @param {string} _id
+ * @returns {Promise<object>} server response
+ */
 export const deleteEmployee = async (_id) => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/${_id}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/${_id}`, {
+      method: 'DELETE',
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw data;
+    }
+
+    return data;
   } catch (error) {
-    throw error.response ? error.response.data : { message: "Network error" };
+    throw error.message ? error : { message: "Network error" };
   }
 };

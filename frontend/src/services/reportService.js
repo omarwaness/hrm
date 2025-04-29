@@ -1,7 +1,3 @@
-import axios from "axios";
-
-
-
 const API_BASE_URL = "http://localhost:5000/api/reports"; // Update if your backend is hosted elsewhere
 
 /**
@@ -16,15 +12,39 @@ const API_BASE_URL = "http://localhost:5000/api/reports"; // Update if your back
  */
 export const saveReport = async (reportData) => {
   try {
-    const response = await axios.post(API_BASE_URL, reportData);
-    return response.data;
+    const response = await fetch(API_BASE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reportData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw data; // Backend sends { message: "..." }
+    }
+
+    return data;
   } catch (error) {
-    throw error.response ? error.response.data : { message: "Network error" };
+    throw error.message ? error : { message: "Network error" };
   }
 };
 
 // Get all reports
 export const getAllReports = async () => {
-    const response = await axios.get(API_BASE_URL)
-    return response.data
+  try {
+    const response = await fetch(API_BASE_URL);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw data;
+    }
+
+    return data;
+  } catch (error) {
+    throw error.message ? error : { message: "Network error" };
   }
+};

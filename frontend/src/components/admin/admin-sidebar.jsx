@@ -27,7 +27,7 @@ export function AdminSidebar({ setActiveComponent, ...props }) {
           <Users className="mr-2 h-5 w-5" />
           View
         </Button>
-        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("AddEmpolyee")}>  
+        <Button variant="ghost" className="justify-start" onClick={() => setActiveComponent("AddManager")}>  
           <UserPlus className="mr-2 h-5 w-5" />
           Add
         </Button>

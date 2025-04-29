@@ -21,7 +21,7 @@ function AddManager() {
     phoneNumber: "",
     email: "",
     password: "",
-    role: "Employee"
+    role: "Manager"
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,7 +74,7 @@ function AddManager() {
         phoneNumber: "",
         email: "",
         password: "",
-        role: "Employee"
+        role: "Manager"
       });
       setTimeout(() => setShowSuccess(false), 3000);
     } else {
@@ -87,9 +87,9 @@ function AddManager() {
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-sm">
       <CardHeader>
-        <CardTitle className="text-xl text-center">Add New Employee</CardTitle>
+        <CardTitle className="text-xl text-center">Add New Manager</CardTitle>
         <CardDescription className="text-center text-sm">
-          Fill in the employee details.
+          Fill in the manager details.
         </CardDescription>
       </CardHeader>
 
@@ -99,7 +99,7 @@ function AddManager() {
             <div className="flex items-center">
               <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
               <AlertDescription>
-                Employee added successfully.
+                Manager added successfully.
               </AlertDescription>
             </div>
           </Alert>
@@ -180,7 +180,7 @@ function AddManager() {
             <Input
               id="role"
               name="role"
-              value="Employee"
+              value="Manager"
               disabled
               readOnly
               className="bg-gray-100 cursor-not-allowed"
@@ -192,13 +192,13 @@ function AddManager() {
             className="w-full"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Adding..." : "Add Employee"}
+            {isSubmitting ? "Adding..." : "Add Manager"}
           </Button>
         </form>
       </CardContent>
 
       <CardFooter className="text-center text-xs text-gray-500">
-        All employee data will be securely stored.
+        All manager data will be securely stored.
       </CardFooter>
     </Card>
   );
