@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { User, Briefcase, Star, Trash2 } from "lucide-react";
-import { getLeaveRequestsByEmail } from "@/services/leaveService"; // adjust path
+import { getLeaveRequestsByEmail } from "@/services/leaveService";
+import { getToDoByEmail, addToDo, deleteToDo, updateToDoFavorite } from "@/services/ToDoService";
 import { subMonths, format } from "date-fns";
+import Loading from "./Loading";
 import {
   ResponsiveContainer,
   BarChart,
@@ -30,6 +32,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState("");
+  const [todoLoading, setTodoLoading] = useState(false);
 
   const [chartData, setChartData] = useState([]);
   const [chartLoading, setChartLoading] = useState(true);
@@ -65,6 +68,25 @@ function Dashboard() {
       isMounted = false;
     };
   }, [navigate]);
+
+  // Fetch todos when user is available
+  useEffect(() => {
+    const fetchTodos = async () => {
+      if (!user?.email) return;
+      
+      setTodoLoading(true);
+      try {
+        const todoData = await getToDoByEmail(user.email);
+        setTodos(todoData);
+      } catch (err) {
+        console.error("Failed to fetch todos:", err);
+      } finally {
+        setTodoLoading(false);
+      }
+    };
+    
+    fetchTodos();
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -116,31 +138,66 @@ function Dashboard() {
     }
   }, [user]);
 
-  const handleAddTodo = () => {
-    if (newTodo.trim() !== "") {
-      setTodos([...todos, { text: newTodo.trim(), favorite: false }]);
-      setNewTodo("");
+  const handleAddTodo = async () => {
+    if (newTodo.trim() !== "" && user?.email) {
+      setTodoLoading(true);
+      try {
+        // Add to backend
+        const response = await addToDo(user.email, newTodo.trim(), false);
+        
+        // Update local state with the new todo from response
+        if (response.todo) {
+          setTodos([...todos, response.todo]);
+        } else {
+          // Fallback if response doesn't contain the new todo
+          const updatedTodos = await getToDoByEmail(user.email);
+          setTodos(updatedTodos);
+        }
+        
+        setNewTodo("");
+      } catch (err) {
+        console.error("Failed to add todo:", err);
+      } finally {
+        setTodoLoading(false);
+      }
     }
   };
 
-  const handleDeleteTodo = (index) => {
-    const updatedTodos = todos.filter((_, i) => i !== index);
-    setTodos(updatedTodos);
+  const handleDeleteTodo = async (id, index) => {
+    setTodoLoading(true);
+    try {
+      await deleteToDo(id);
+      const updatedTodos = todos.filter((_, i) => i !== index);
+      setTodos(updatedTodos);
+    } catch (err) {
+      console.error("Failed to delete todo:", err);
+    } finally {
+      setTodoLoading(false);
+    }
   };
 
-  const handleToggleFavorite = (index) => {
-    const updatedTodos = todos.map((todo, i) =>
-      i === index ? { ...todo, favorite: !todo.favorite } : todo
-    );
-    setTodos(updatedTodos);
+  const handleToggleFavorite = async (id, index) => {
+    setTodoLoading(true);
+    try {
+      const currentTodo = todos[index];
+      const newFavoriteStatus = !currentTodo.favorite;
+      
+      await updateToDoFavorite(id, newFavoriteStatus);
+      
+      const updatedTodos = todos.map((todo, i) =>
+        i === index ? { ...todo, favorite: newFavoriteStatus } : todo
+      );
+      
+      setTodos(updatedTodos);
+    } catch (err) {
+      console.error("Failed to update favorite status:", err);
+    } finally {
+      setTodoLoading(false);
+    }
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p>Loading...</p>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
@@ -207,54 +264,66 @@ function Dashboard() {
                   onChange={(e) => setNewTodo(e.target.value)}
                   placeholder="Add new todo..."
                   className="flex-1 border rounded-md p-2 text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAddTodo();
+                    }
+                  }}
                 />
                 <button
                   onClick={handleAddTodo}
                   className="px-4 py-2 bg-primary text-white rounded-md text-sm"
+                  disabled={todoLoading || newTodo.trim() === ""}
                 >
-                  Add
+                  {todoLoading ? "Adding..." : "Add"}
                 </button>
               </div>
 
               {/* Todo List */}
-              <ul className="space-y-2">
-                {todos.length > 0 ? (
-                  todos.map((todo, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center justify-between bg-muted p-2 rounded-md"
-                    >
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleToggleFavorite(index)}
-                          className="text-yellow-500"
-                        >
-                          <Star
-                            className={`h-4 w-4 ${
-                              todo.favorite ? "fill-yellow-400" : ""
-                            }`}
-                          />
-                        </button>
-                        <span
-                          className={`text-sm ${
-                            todo.favorite ? "font-semibold text-yellow-600" : ""
-                          }`}
-                        >
-                          {todo.text}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteTodo(index)}
-                        className="text-destructive"
+              {todoLoading && todos.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Loading todos...</p>
+              ) : (
+                <ul className="space-y-2 max-h-64 overflow-y-auto">
+                  {todos.length > 0 ? (
+                    todos.map((todo, index) => (
+                      <li
+                        key={todo._id || index}
+                        className="flex items-center justify-between bg-muted p-2 rounded-md"
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </li>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">No todos yet.</p>
-                )}
-              </ul>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleToggleFavorite(todo._id, index)}
+                            className="text-yellow-500"
+                            disabled={todoLoading}
+                          >
+                            <Star
+                              className={`h-4 w-4 ${
+                                todo.favorite ? "fill-yellow-400" : ""
+                              }`}
+                            />
+                          </button>
+                          <span
+                            className={`text-sm ${
+                              todo.favorite ? "font-semibold text-yellow-600" : ""
+                            }`}
+                          >
+                            {todo.task}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteTodo(todo._id, index)}
+                          className="text-destructive"
+                          disabled={todoLoading}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </li>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No todos yet.</p>
+                  )}
+                </ul>
+              )}
             </CardContent>
           </Card>
 

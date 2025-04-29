@@ -18,7 +18,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(cookieParser());
-
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'public')));
 // CORS configuration
 const corsOptions = {
     origin: "http://localhost:3000",
@@ -57,8 +58,8 @@ app.use("/api/resignation", require("./Routes/ResignationRoutes"));
 app.use("/api/ai", require("./Routes/chatRoutes"));
 app.use("/api/jobs", require("./Routes/jobRoutes"))
 app.use("/api/applications", require("./Routes/applicationRoutes"))
-
-
+app.use("/api/email", require("./Routes/emailRoutes"))
+app.use("/api/ToDo",require('./Routes/toDoRoutes'))
 // Make io available in routes/controllers
 app.set("io", io);
 

@@ -1,19 +1,22 @@
 "use client";
+  
 
-import { useState } from "react";
-import { useParams } from "react-router-dom"; // ✅ Import useParams
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom"; // ✅ Import useParams
 import { applyForJob } from "@/services/applicationService"; // Adjust path if needed
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import { jwtDecode } from "jwt-decode";
 export default function ApplyToJob() {
+  const navigate=useNavigate()
   const { jobId } = useParams(); // ✅ Get jobId from URL
   const [email, setEmail] = useState("");
   const [cvFile, setCvFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const token = localStorage.getItem("token");
 
   const handleSubmit = async (e) => {
     e.preventDefault();

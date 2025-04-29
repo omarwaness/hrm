@@ -1,22 +1,24 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Pencil, Save, X, User, Mail, Phone, Calendar, FileText, AlertTriangle, Trash2 } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { Pencil, Save, X, User, Mail, Phone, Calendar, FileText, AlertTriangle, Trash2, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input" // Import Input
-import { Textarea } from "@/components/ui/textarea" // Import Textarea
-import { Label } from "@/components/ui/label" // Import Label
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card" // Import Card components
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { jwtDecode } from 'jwt-decode';
-import { useNavigate } from 'react-router-dom' // Assuming react-router-dom is used, adjust if using Next.js router
-import Loading from "./Loading"; // Assuming Loading component exists
+import { useNavigate } from 'react-router-dom'
+import Loading from "./Loading";
 
 const Account = () => {
     const navigate = useNavigate()
-    const [loading, setLoading] = useState(true) // Start with loading true
+    const [loading, setLoading] = useState(true)
     const [user, setUser] = useState(null)
     const [editMode, setEditMode] = useState(false)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+    const [uploadingAvatar, setUploadingAvatar] = useState(false)
+    const fileInputRef = useRef(null)
 
     // Initialize userData with default structure
     const [userData, setUserData] = useState({
@@ -26,8 +28,8 @@ const Account = () => {
         phone: "",
         joinDate: new Date(),
         role: "",
-        bio: "", // Initialize empty, populate later
-        profileImage: "/placeholder.svg?height=100&width=100", // Default placeholder
+        bio: "",
+        profileImage: "/placeholder.svg?height=100&width=100",
     })
 
     // Use formData for edits, initialized from userData
@@ -35,7 +37,7 @@ const Account = () => {
 
     // Fetch and decode user token
     useEffect(() => {
-        let isMounted = true; // Prevent state updates on unmounted component
+        let isMounted = true;
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
@@ -56,7 +58,7 @@ const Account = () => {
                 setLoading(false);
             }
         }
-        return () => { isMounted = false }; // Cleanup function
+        return () => { isMounted = false };
     }, [navigate]);
 
     // Populate userData and formData once user is decoded
@@ -66,19 +68,16 @@ const Account = () => {
                 firstName: user.firstName || "",
                 lastName: user.lastName || "",
                 email: user.email || "",
-                phone: user.phoneNumber || "", // Ensure key matches API expectation
-                // Handle potential date string format issues more robustly
+                phone: user.phoneNumber || "",
                 joinDate: user.createAt ? new Date(user.createAt) : new Date(),
                 role: user.role || "",
-                // Example Bio - Ideally this would come from user data if available
                 bio: user.bio || "Experienced software developer with 5+ years of experience.",
                 profileImage: user.profileImage || "/placeholder.svg?height=100&width=100",
             };
             setUserData(initialData);
-            setFormData(initialData); // Initialize formData
+            setFormData(initialData);
         }
     }, [user]);
-
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -86,6 +85,76 @@ const Account = () => {
             ...prev,
             [name]: value,
         }));
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+            alert('Please select a valid image file (JPEG, PNG, or GIF)');
+            return;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            alert('File size exceeds 5MB limit');
+            return;
+        }
+        
+        setUploadingAvatar(true);
+        
+        try {
+            const formData = new FormData();
+            formData.append('avatar', file);
+            
+            const res = await fetch(`http://localhost:5000/api/user/${user.id}/avatar`, {
+                method: 'POST',
+                body: formData,
+                credentials: 'include',
+            });
+            
+            if (res.ok) {
+                const data = await res.json();
+                
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    
+                    try {
+                        const updatedUser = jwtDecode(data.token);
+                        setUser(updatedUser);
+                        
+                        // Update the profile image in our state
+                        setUserData(prev => ({
+                            ...prev,
+                            profileImage: updatedUser.profileImage
+                        }));
+                        
+                        setFormData(prev => ({
+                            ...prev,
+                            profileImage: updatedUser.profileImage
+                        }));
+                        
+                    } catch (decodeError) {
+                        console.error("Error decoding new token:", decodeError);
+                        localStorage.removeItem('token');
+                        navigate('/login');
+                    }
+                }
+            } else {
+                const errorData = await res.json();
+                console.error("Failed to upload avatar:", errorData.message || res.statusText);
+                alert("Failed to upload avatar. Please try again.");
+            }
+        } catch (err) {
+            console.error("Error uploading avatar:", err);
+            alert("Error uploading avatar. Please try again.");
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
+
+    const triggerFileInput = () => {
+        fileInputRef.current.click();
     };
 
     const handleSubmit = async (e) => {
@@ -108,6 +177,7 @@ const Account = () => {
               email: formData.email,
               phoneNumber: formData.phone,
               bio: formData.bio,
+              profileImage: formData.profileImage,
             }),
             credentials: 'include',
           });
@@ -116,16 +186,11 @@ const Account = () => {
             const data = await res.json();
       
             if (data.token) {
-              // ✅ New token received — save it
               localStorage.setItem('token', data.token);
       
               try {
                 const updatedUser = jwtDecode(data.token);
-      
-                // ✅ Update user state with the new token
                 setUser(updatedUser);
-      
-                // ✅ Also update form data from new user info if needed
                 setUserData({
                   firstName: updatedUser.firstName || "",
                   lastName: updatedUser.lastName || "",
@@ -136,10 +201,8 @@ const Account = () => {
                   bio: updatedUser.bio || "Experienced software developer with 5+ years of experience.",
                   profileImage: updatedUser.profileImage || "/placeholder.svg?height=100&width=100",
                 });
-      
               } catch (decodeError) {
                 console.error("Error decoding new token:", decodeError);
-                // Fallback: clear token and redirect to login
                 localStorage.removeItem('token');
                 navigate('/login');
               }
@@ -147,8 +210,7 @@ const Account = () => {
               console.warn("No new token received, keeping old data.");
             }
       
-            setEditMode(false); // Exit edit mode
-      
+            setEditMode(false);
           } else {
             const errorData = await res.json();
             console.error("Failed to update user:", errorData.message || res.statusText);
@@ -159,11 +221,9 @@ const Account = () => {
           setLoading(false);
         }
       };
-      
-
 
     const cancelEdit = () => {
-        setFormData({ ...userData }); // Reset form data to original user data
+        setFormData({ ...userData });
         setEditMode(false);
     };
 
@@ -173,34 +233,30 @@ const Account = () => {
         try {
             const res = await fetch(`http://localhost:5000/api/user/${user.id}`, {
                 method: 'DELETE',
-                credentials: 'include', // Include credentials if needed for auth
+                credentials: 'include',
             });
 
             if (res.ok) {
                 localStorage.removeItem('token');
-                setUser(null); // Clear user state
-                navigate('/'); // Navigate to home or login page
+                setUser(null);
+                navigate('/');
             } else {
                  const errorData = await res.json();
                  console.error("Failed to delete account:", errorData.message || res.statusText);
-                 // Optionally: show error message
             }
         } catch (err) {
             console.error("Error deleting account:", err);
-             // Optionally: show error message
         } finally {
              setLoading(false);
-             setShowDeleteConfirm(false); // Hide confirmation modal regardless of outcome
+             setShowDeleteConfirm(false);
         }
     }
 
-    // Loading state or if user data hasn't loaded yet
     if (loading || !user) {
-        return <Loading />; // Show loading indicator
+        return <Loading />;
     }
 
     return (
-        // Reduced max-width and centered layout, similar to LeaveRequest
         <div className="flex min-h-screen flex-col p-4 bg-background">
             <div className="mx-auto w-full max-w-4xl space-y-8 py-10">
 
@@ -216,7 +272,6 @@ const Account = () => {
                             <Button onClick={cancelEdit} variant="outline">
                                 <X className="mr-2 h-4 w-4" /> Cancel
                             </Button>
-                            {/* Use the form's submit handler via Button type="submit" linked to the form */}
                             <Button type="submit" form="profile-form" disabled={loading}>
                                 <Save className="mr-2 h-4 w-4" /> {loading ? 'Saving...' : 'Save Changes'}
                             </Button>
@@ -231,24 +286,44 @@ const Account = () => {
                         <CardDescription>Manage your personal details and contact information.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {/* Link the Save button to this form */}
                         <form id="profile-form" onSubmit={handleSubmit} className="space-y-6">
                             <div className="flex flex-col lg:flex-row gap-8">
                                 {/* Profile Image Section */}
                                 <div className="flex flex-col items-center gap-4 lg:w-1/4 lg:items-start">
                                      <Label>Profile Picture</Label>
-                                    <div className="h-32 w-32 rounded-full bg-muted overflow-hidden border-4 border-background shadow">
-                                        <img
-                                            src={userData.profileImage || "/placeholder.svg"}
-                                            alt={`${userData.firstName} ${userData.lastName}`}
-                                            className="h-full w-full object-cover"
-                                        />
+                                    <div className="h-32 w-32 rounded-full bg-muted overflow-hidden border-4 border-background shadow relative group">
+                                    <img
+  src={userData.profileImage && userData.profileImage.startsWith('/') 
+    ? `http://localhost:5000${userData.profileImage}` 
+    : userData.profileImage || "/placeholder.svg"}
+  alt={`${userData.firstName} ${userData.lastName}`}
+  className="h-full w-full object-cover"
+/>
+                                        {editMode && (
+                                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Upload className="h-8 w-8 text-white" />
+                                            </div>
+                                        )}
                                     </div>
                                     {editMode && (
-                                        // Use Button component
-                                        <Button type="button" variant="outline" className="w-full" disabled> {/* Disabled as functionality isn't implemented */}
-                                             Change Photo
-                                        </Button>
+                                        <>
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef}
+                                                className="hidden"
+                                                accept="image/jpeg,image/png,image/gif" 
+                                                onChange={handleFileChange}
+                                            />
+                                            <Button 
+                                                type="button" 
+                                                variant="outline" 
+                                                className="w-full"
+                                                disabled={uploadingAvatar}
+                                                onClick={triggerFileInput}
+                                            >
+                                                {uploadingAvatar ? 'Uploading...' : 'Change Photo'}
+                                            </Button>
+                                        </>
                                     )}
                                 </div>
 
@@ -256,7 +331,7 @@ const Account = () => {
                                 <div className="flex-1 space-y-6">
                                     {/* Name Fields */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-1.5"> {/* Adjusted spacing for label/input */}
+                                        <div className="space-y-1.5">
                                             <Label htmlFor="firstName">First Name</Label>
                                             {editMode ? (
                                                 <Input
@@ -267,7 +342,7 @@ const Account = () => {
                                                     disabled={loading}
                                                 />
                                             ) : (
-                                                <div className="flex items-center gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[40px]"> {/* Matched Input height */}
+                                                <div className="flex items-center gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[40px]">
                                                     <User className="h-4 w-4 text-muted-foreground" />
                                                     <span className="text-sm text-foreground">{userData.firstName}</span>
                                                 </div>
@@ -345,7 +420,6 @@ const Account = () => {
                                             <div className="flex items-center gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[40px]">
                                                 <Calendar className="h-4 w-4 text-muted-foreground" />
                                                 <span className="text-sm text-foreground">
-                                                     {/* Added check for valid date */}
                                                      {userData.joinDate instanceof Date && !isNaN(userData.joinDate)
                                                          ? userData.joinDate.toLocaleDateString()
                                                          : 'N/A'}
@@ -362,7 +436,7 @@ const Account = () => {
                                                 id="bio"
                                                 name="bio"
                                                 rows={4}
-                                                className="min-h-[100px]" // Consistent sizing
+                                                className="min-h-[100px]"
                                                 value={formData.bio}
                                                 onChange={handleInputChange}
                                                 placeholder="Write a short bio about yourself"
@@ -377,15 +451,13 @@ const Account = () => {
                                     </div>
                                 </div>
                             </div>
-                             {/* Form submission button moved to header, but form tag wraps content */}
                         </form>
                     </CardContent>
                 </Card>
 
                 {/* Delete Account Card */}
-                <Card className="border-destructive"> {/* Highlight card border */}
+                <Card className="border-destructive">
                      <CardHeader>
-                          {/* Use CardTitle and optionally CardDescription */}
                          <CardTitle className="text-destructive flex items-center gap-2">
                               <AlertTriangle className="h-5 w-5"/> Alert
                          </CardTitle>
@@ -410,7 +482,7 @@ const Account = () => {
                                   <div className="flex justify-end space-x-3">
                                        <Button
                                             type="button"
-                                            variant="outline" // Secondary action style
+                                            variant="outline"
                                             onClick={() => setShowDeleteConfirm(false)}
                                              disabled={loading}
                                        >
@@ -429,7 +501,7 @@ const Account = () => {
                         ) : (
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div>
-                                    <h3 className="text-base font-semibold text-foreground">Delete account</h3> {/* Slightly less prominent than CardTitle */}
+                                    <h3 className="text-base font-semibold text-foreground">Delete account</h3>
                                     <p className="mt-1 text-sm text-muted-foreground">
                                         Once you delete your account, there is no going back. Please be certain.
                                     </p>
@@ -437,7 +509,7 @@ const Account = () => {
                                 <Button
                                     onClick={() => setShowDeleteConfirm(true)}
                                     variant="destructive"
-                                    className="w-full sm:w-auto" // Full width on small screens
+                                    className="w-full sm:w-auto"
                                      disabled={loading}
                                 >
                                     <Trash2 className="mr-2 h-4 w-4" /> Delete Account

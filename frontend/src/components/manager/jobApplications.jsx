@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAllApplications } from "@/services/applicationService";
+import { getAllApplications, deleteApplication } from "@/services/applicationService";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, XCircle } from "lucide-react";
+import axios from "axios";
 
 export default function ManageApplications() {
   const [applications, setApplications] = useState([]);
@@ -27,28 +28,79 @@ export default function ManageApplications() {
     fetchApplications();
   }, []);
 
-  const handleAccept = async (applicationId) => {
+  const sendEmail = async (email, subject, message) => {
     try {
-      // Here you will later send an email to the applicant
-      console.log("Accepting application:", applicationId);
-      setActionStatus({ type: "success", message: "Application accepted successfully." });
+      await axios.post('http://localhost:5000/api/email/send', {
+        to: email,
+        subject,
+        message,
+      });
+      return true;
+    } catch (error) {
+      console.error("Failed to send email:", error);
+      return false;
+    }
+  };
+
+  const handleAccept = async (application) => {
+    try {
+      // Send acceptance email to the applicant
+      const emailSent = await sendEmail(
+        application.email,
+        "Job Application Accepted",
+        `Congratulations! Your application for the position of ${application.job?.title || "our job opening"} has been accepted. We will contact you shortly with next steps.`
+      );
+
+      console.log("Accepting application:", application._id);
+      await deleteApplication(application._id);
+      if (emailSent) {
+        setActionStatus({ 
+          type: "success", 
+          message: "Application accepted and acceptance email sent successfully." 
+        });
+      } else {
+        setActionStatus({ 
+          type: "warning", 
+          message: "Application accepted but failed to send the notification email." 
+        });
+      }
 
       // Remove the accepted application from the list
-      setApplications((prev) => prev.filter((app) => app._id !== applicationId));
+      setApplications((prev) => prev.filter((app) => app._id !== application._id));
     } catch (error) {
       console.error("Error accepting application:", error);
       setActionStatus({ type: "error", message: "Failed to accept application." });
     }
   };
 
-  const handleDeny = async (applicationId) => {
+  const handleDeny = async (application) => {
     try {
-      // Here you will later send a rejection email
-      console.log("Denying application:", applicationId);
-      setActionStatus({ type: "success", message: "Application denied successfully." });
+      // Send rejection email to the applicant
+      const emailSent = await sendEmail(
+        application.email,
+        "Response to Your Job Application",
+        `Thank you for your interest in ${application.job?.title || "our job opening"}. After careful consideration, we have decided to pursue other candidates for this position. We appreciate your time and wish you the best in your job search.`
+      );
+
+      // Delete the application from the database
+      await deleteApplication(application._id);
+      
+      console.log("Denying application:", application._id);
+      
+      if (emailSent) {
+        setActionStatus({ 
+          type: "success", 
+          message: "Application denied and rejection email sent successfully." 
+        });
+      } else {
+        setActionStatus({ 
+          type: "warning", 
+          message: "Application denied but failed to send the notification email." 
+        });
+      }
 
       // Remove the denied application from the list
-      setApplications((prev) => prev.filter((app) => app._id !== applicationId));
+      setApplications((prev) => prev.filter((app) => app._id !== application._id));
     } catch (error) {
       console.error("Error denying application:", error);
       setActionStatus({ type: "error", message: "Failed to deny application." });
@@ -69,7 +121,11 @@ export default function ManageApplications() {
 
         <CardContent className="p-4 space-y-4">
           {actionStatus.message && (
-            <Alert className={`mb-4 ${actionStatus.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+            <Alert className={`mb-4 ${
+              actionStatus.type === "success" ? "bg-green-50 text-green-800" : 
+              actionStatus.type === "warning" ? "bg-yellow-50 text-yellow-800" : 
+              "bg-red-50 text-red-800"
+            }`}>
               <div className="flex items-center">
                 {actionStatus.type === "success" ? (
                   <CheckCircle className="h-6 w-6 mr-3 text-green-500" />
@@ -109,10 +165,17 @@ export default function ManageApplications() {
                   </div>
 
                   <div className="flex space-x-2 mt-4 sm:mt-0">
-                    <Button variant="outline" className="border-green-500 text-green-600 hover:bg-green-50" onClick={() => handleAccept(app._id)}>
+                    <Button 
+                      variant="outline" 
+                      className="border-green-500 text-green-600 hover:bg-green-50" 
+                      onClick={() => handleAccept(app)}
+                    >
                       Accept
                     </Button>
-                    <Button variant="destructive" onClick={() => handleDeny(app._id)}>
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => handleDeny(app)}
+                    >
                       Deny
                     </Button>
                   </div>

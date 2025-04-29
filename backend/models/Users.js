@@ -33,7 +33,7 @@ const UserSchema = new mongoose.Schema(
       default: "Conditate"
     },
     
-    profilePicture: { type: String },
+    profileImage: String,
     confirmed: { type: Boolean, default: false },
     emailActivationToken: String,
     resetPasswordToken: String,
