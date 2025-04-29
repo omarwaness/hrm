@@ -12,7 +12,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+const [userData, setUserData] = useState({
+  firstName: "",
+  lastName: "",
+  email: "",
+  phoneNumber: "",
+  createdAt: new Date(),
+  role: "",
+  bio: "",
+  profileImage: "/placeholder.svg?height=100&width=100",
+})
 // Créer un contexte pour gérer les notifications à travers l'application
 export const NotificationContext = createContext({
   unreadCount: 0,

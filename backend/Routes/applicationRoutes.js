@@ -50,7 +50,9 @@ router.get('/:id', async (req, res) => {
 // DELETE: Delete an application
 router.delete('/:id', async (req, res) => {
   try {
+    
     const deletedApplication = await Application.findByIdAndDelete(req.params.id);
+    
     if (!deletedApplication) {
       return res.status(404).json({ error: 'Application not found' });
     }
