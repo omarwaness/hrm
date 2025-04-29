@@ -54,7 +54,7 @@ const Account = () => {
             localStorage.removeItem('token');
             navigate('/login');
         } finally {
-             if (isMounted) {
+            if (isMounted) {
                 setLoading(false);
             }
         }
@@ -69,7 +69,7 @@ const Account = () => {
                 lastName: user.lastName || "",
                 email: user.email || "",
                 phone: user.phoneNumber || "",
-                joinDate: user.createAt ? new Date(user.createAt) : new Date(),
+                joinDate: user.createdAt ? new Date(user.createdAt) : new Date(), // Fixed typo: createAt -> createdAt
                 role: user.role || "",
                 bio: user.bio || "Experienced software developer with 5+ years of experience.",
                 profileImage: user.profileImage || "/placeholder.svg?height=100&width=100",
@@ -196,7 +196,7 @@ const Account = () => {
                   lastName: updatedUser.lastName || "",
                   email: updatedUser.email || "",
                   phone: updatedUser.phoneNumber || "",
-                  joinDate: updatedUser.createAt ? new Date(updatedUser.createAt) : new Date(),
+                  joinDate: updatedUser.createdAt ? new Date(updatedUser.createdAt) : new Date(), // Fixed typo: createAt -> createdAt
                   role: updatedUser.role || "",
                   bio: updatedUser.bio || "Experienced software developer with 5+ years of experience.",
                   profileImage: updatedUser.profileImage || "/placeholder.svg?height=100&width=100",
@@ -214,9 +214,11 @@ const Account = () => {
           } else {
             const errorData = await res.json();
             console.error("Failed to update user:", errorData.message || res.statusText);
+            alert("Failed to update profile. Please try again.");
           }
         } catch (err) {
           console.error("Error submitting user update:", err);
+          alert("Error updating profile. Please try again.");
         } finally {
           setLoading(false);
         }
@@ -243,9 +245,11 @@ const Account = () => {
             } else {
                  const errorData = await res.json();
                  console.error("Failed to delete account:", errorData.message || res.statusText);
+                 alert("Failed to delete account. Please try again.");
             }
         } catch (err) {
             console.error("Error deleting account:", err);
+            alert("Error deleting account. Please try again.");
         } finally {
              setLoading(false);
              setShowDeleteConfirm(false);
@@ -290,17 +294,17 @@ const Account = () => {
                             <div className="flex flex-col lg:flex-row gap-8">
                                 {/* Profile Image Section */}
                                 <div className="flex flex-col items-center gap-4 lg:w-1/4 lg:items-start">
-                                     <Label>Profile Picture</Label>
+                                    <Label>Profile Picture</Label>
                                     <div className="h-32 w-32 rounded-full bg-muted overflow-hidden border-4 border-background shadow relative group">
-                                    <img
-  src={userData.profileImage && userData.profileImage.startsWith('/') 
-    ? `http://localhost:5000${userData.profileImage}` 
-    : userData.profileImage || "/placeholder.svg"}
-  alt={`${userData.firstName} ${userData.lastName}`}
-  className="h-full w-full object-cover"
-/>
+                                        {/* Debug information */}
+                                        {process.env.NODE_ENV === 'development' && console.log("Profile image path:", userData.profileImage)}
+                                        
+                                        <img
+                                            
+                                        />
                                         {editMode && (
-                                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                                 onClick={triggerFileInput}>
                                                 <Upload className="h-8 w-8 text-white" />
                                             </div>
                                         )}
@@ -340,6 +344,7 @@ const Account = () => {
                                                     value={formData.firstName}
                                                     onChange={handleInputChange}
                                                     disabled={loading}
+                                                    required
                                                 />
                                             ) : (
                                                 <div className="flex items-center gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[40px]">
@@ -357,6 +362,7 @@ const Account = () => {
                                                     value={formData.lastName}
                                                     onChange={handleInputChange}
                                                     disabled={loading}
+                                                    required
                                                 />
                                             ) : (
                                                 <div className="flex items-center gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[40px]">
@@ -378,7 +384,8 @@ const Account = () => {
                                                     type="email"
                                                     value={formData.email}
                                                     onChange={handleInputChange}
-                                                     disabled={loading}
+                                                    disabled={loading}
+                                                    required
                                                 />
                                             ) : (
                                                 <div className="flex items-center gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[40px]">
@@ -395,7 +402,7 @@ const Account = () => {
                                                     name="phone"
                                                     value={formData.phone}
                                                     onChange={handleInputChange}
-                                                     disabled={loading}
+                                                    disabled={loading}
                                                 />
                                             ) : (
                                                 <div className="flex items-center gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[40px]">
@@ -412,7 +419,7 @@ const Account = () => {
                                             <Label htmlFor="role">Role</Label>
                                             <div className="flex items-center gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[40px]">
                                                 <User className="h-4 w-4 text-muted-foreground" />
-                                                <span className="text-sm text-foreground">{userData.role}</span>
+                                                <span className="text-sm text-foreground">{userData.role || 'N/A'}</span>
                                             </div>
                                         </div>
                                         <div className="space-y-1.5">
@@ -420,10 +427,10 @@ const Account = () => {
                                             <div className="flex items-center gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[40px]">
                                                 <Calendar className="h-4 w-4 text-muted-foreground" />
                                                 <span className="text-sm text-foreground">
-                                                     {userData.joinDate instanceof Date && !isNaN(userData.joinDate)
-                                                         ? userData.joinDate.toLocaleDateString()
-                                                         : 'N/A'}
-                                                 </span>
+                                                    {userData.joinDate instanceof Date && !isNaN(userData.joinDate)
+                                                        ? userData.joinDate.toLocaleDateString()
+                                                        : 'N/A'}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -440,13 +447,13 @@ const Account = () => {
                                                 value={formData.bio}
                                                 onChange={handleInputChange}
                                                 placeholder="Write a short bio about yourself"
-                                                 disabled={loading}
+                                                disabled={loading}
                                             />
                                         ) : (
-                                             <div className="flex gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[100px]">
-                                                 <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
-                                                 <span className="text-sm text-foreground">{userData.bio || 'No bio provided.'}</span>
-                                             </div>
+                                            <div className="flex gap-2 p-2.5 border border-border rounded-md bg-muted min-h-[100px]">
+                                                <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                                                <span className="text-sm text-foreground">{userData.bio || 'No bio provided.'}</span>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -457,47 +464,47 @@ const Account = () => {
 
                 {/* Delete Account Card */}
                 <Card className="border-destructive">
-                     <CardHeader>
-                         <CardTitle className="text-destructive flex items-center gap-2">
-                              <AlertTriangle className="h-5 w-5"/> Alert
-                         </CardTitle>
-                          <CardDescription className="text-destructive/90">
-                               Critical actions that require confirmation.
-                          </CardDescription>
-                     </CardHeader>
+                    <CardHeader>
+                        <CardTitle className="text-destructive flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5"/> Alert
+                        </CardTitle>
+                        <CardDescription className="text-destructive/90">
+                            Critical actions that require confirmation.
+                        </CardDescription>
+                    </CardHeader>
                     <CardContent>
                         {showDeleteConfirm ? (
-                             <div className="bg-destructive/10 border border-destructive/20 rounded-md p-4 space-y-3">
-                                  <div className="flex items-start gap-3">
-                                       <div className="flex-shrink-0 text-destructive pt-0.5">
-                                            <AlertTriangle className="h-5 w-5" />
-                                       </div>
-                                       <div>
-                                            <h3 className="text-sm font-medium text-destructive">Are you sure you want to delete your account?</h3>
-                                            <p className="mt-1 text-sm text-destructive/80">
-                                                 This action cannot be undone. All of your data will be permanently removed.
-                                            </p>
-                                       </div>
-                                  </div>
-                                  <div className="flex justify-end space-x-3">
-                                       <Button
-                                            type="button"
-                                            variant="outline"
-                                            onClick={() => setShowDeleteConfirm(false)}
-                                             disabled={loading}
-                                       >
-                                            Cancel
-                                       </Button>
-                                        <Button
-                                            type="button"
-                                            variant="destructive"
-                                            onClick={handleDeleteAccount}
-                                             disabled={loading}
-                                        >
-                                            {loading ? 'Deleting...' : 'Yes, delete my account'}
-                                        </Button>
-                                  </div>
-                             </div>
+                            <div className="bg-destructive/10 border border-destructive/20 rounded-md p-4 space-y-3">
+                                <div className="flex items-start gap-3">
+                                    <div className="flex-shrink-0 text-destructive pt-0.5">
+                                        <AlertTriangle className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-medium text-destructive">Are you sure you want to delete your account?</h3>
+                                        <p className="mt-1 text-sm text-destructive/80">
+                                            This action cannot be undone. All of your data will be permanently removed.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end space-x-3">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setShowDeleteConfirm(false)}
+                                        disabled={loading}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        onClick={handleDeleteAccount}
+                                        disabled={loading}
+                                    >
+                                        {loading ? 'Deleting...' : 'Yes, delete my account'}
+                                    </Button>
+                                </div>
+                            </div>
                         ) : (
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div>
@@ -510,7 +517,7 @@ const Account = () => {
                                     onClick={() => setShowDeleteConfirm(true)}
                                     variant="destructive"
                                     className="w-full sm:w-auto"
-                                     disabled={loading}
+                                    disabled={loading}
                                 >
                                     <Trash2 className="mr-2 h-4 w-4" /> Delete Account
                                 </Button>
@@ -518,7 +525,6 @@ const Account = () => {
                         )}
                     </CardContent>
                 </Card>
-
             </div>
         </div>
     );

@@ -19,7 +19,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(cookieParser());
-const path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
 // CORS configuration
 const corsOptions = {

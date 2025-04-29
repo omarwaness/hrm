@@ -1,9 +1,9 @@
-import { AlignJustify, Sun, Moon, LogOut, User, Mail, Bell } from "lucide-react";
+import React, { useEffect, useState, createContext, useContext } from "react";
+import { AlignJustify, Sun, Moon, LogOut, User, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useEffect, useState, createContext, useContext } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,16 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-const [userData, setUserData] = useState({
-  firstName: "",
-  lastName: "",
-  email: "",
-  phoneNumber: "",
-  createdAt: new Date(),
-  role: "",
-  bio: "",
-  profileImage: "/placeholder.svg?height=100&width=100",
-})
+
 // Créer un contexte pour gérer les notifications à travers l'application
 export const NotificationContext = createContext({
   unreadCount: 0,
@@ -61,6 +52,17 @@ const applyTheme = (theme) => {
 export function SiteHeader({ setActiveComponent }) {
   const { toggleSidebar } = useSidebar() || { toggleSidebar: null };
   const [theme, setTheme] = useState("light");
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    createdAt: new Date(),
+    role: "",
+    bio: "",
+    profileImage: "/placeholder.svg?height=100&width=100",
+  });
+
   const navigate = useNavigate();
   const { unreadCount, hasNewMessage, setHasNewMessage } = useNotifications();
 
@@ -84,7 +86,6 @@ export function SiteHeader({ setActiveComponent }) {
     }
   }, []);
 
-  // Réinitialiser l'indicateur de nouveau message après un délai
   useEffect(() => {
     if (hasNewMessage) {
       const timer = setTimeout(() => {
@@ -118,8 +119,7 @@ export function SiteHeader({ setActiveComponent }) {
 
   const isAuthenticated = () => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem("token");
-      return token;
+      return localStorage.getItem("token");
     }
     return false;
   };
@@ -165,7 +165,6 @@ export function SiteHeader({ setActiveComponent }) {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          {/* Bouton de notification pour les appareils mobiles */}
           <Button 
             className="relative md:hidden h-8 w-8" 
             variant="ghost" 
@@ -189,7 +188,7 @@ export function SiteHeader({ setActiveComponent }) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                    <AvatarImage src={userData.profileImage} alt="User" />
                     <AvatarFallback>U</AvatarFallback>
                   </Avatar>
                 </Button>

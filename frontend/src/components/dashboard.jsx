@@ -5,7 +5,12 @@ import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { User, Briefcase, Star, Trash2 } from "lucide-react";
 import { getLeaveRequestsByEmail } from "@/services/leaveService";
-import { getToDoByEmail, addToDo, deleteToDo, updateToDoFavorite } from "@/services/ToDoService";
+import {
+  getToDoByEmail,
+  addToDo,
+  deleteToDo,
+  updateToDoFavorite,
+} from "@/services/ToDoService";
 import { subMonths, format } from "date-fns";
 import Loading from "./Loading";
 import {
@@ -28,6 +33,7 @@ function Dashboard() {
     role: "",
     bio: "",
   });
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [todos, setTodos] = useState([]);
@@ -69,42 +75,45 @@ function Dashboard() {
     };
   }, [navigate]);
 
-  // Fetch todos when user is available
   useEffect(() => {
+    let isMounted = true;
+
     const fetchTodos = async () => {
       if (!user?.email) return;
-      
       setTodoLoading(true);
       try {
         const todoData = await getToDoByEmail(user.email);
-        setTodos(todoData);
+        if (isMounted) setTodos(todoData);
       } catch (err) {
         console.error("Failed to fetch todos:", err);
       } finally {
-        setTodoLoading(false);
+        if (isMounted) setTodoLoading(false);
       }
     };
-    
+
     fetchTodos();
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   useEffect(() => {
+    let isMounted = true;
+
     if (user) {
       setUserData({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         email: user.email || "",
         phone: user.phoneNumber || "",
-        joinDate: user.createAt ? new Date(user.createAt) : new Date(),
+        joinDate: user.createdAt ? new Date(user.createdAt) : new Date(),
         role: user.role || "",
         bio: user.bio || "Experienced professional.",
       });
 
-      // Fetch chart data
       const fetchLeaveRequests = async () => {
         try {
           const leaves = await getLeaveRequestsByEmail(user.email);
-
           const today = new Date();
           const monthMap = new Map();
 
@@ -126,34 +135,33 @@ function Dashboard() {
             .sort((a, b) => new Date("1 " + a[0]) - new Date("1 " + b[0]))
             .map(([month, requests]) => ({ month, requests }));
 
-          setChartData(formatted);
+          if (isMounted) setChartData(formatted);
         } catch (error) {
           console.error("Failed to fetch leave requests:", error);
         } finally {
-          setChartLoading(false);
+          if (isMounted) setChartLoading(false);
         }
       };
 
       fetchLeaveRequests();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   const handleAddTodo = async () => {
     if (newTodo.trim() !== "" && user?.email) {
       setTodoLoading(true);
       try {
-        // Add to backend
         const response = await addToDo(user.email, newTodo.trim(), false);
-        
-        // Update local state with the new todo from response
         if (response.todo) {
           setTodos([...todos, response.todo]);
         } else {
-          // Fallback if response doesn't contain the new todo
           const updatedTodos = await getToDoByEmail(user.email);
           setTodos(updatedTodos);
         }
-        
         setNewTodo("");
       } catch (err) {
         console.error("Failed to add todo:", err);
@@ -181,13 +189,12 @@ function Dashboard() {
     try {
       const currentTodo = todos[index];
       const newFavoriteStatus = !currentTodo.favorite;
-      
+
       await updateToDoFavorite(id, newFavoriteStatus);
-      
+
       const updatedTodos = todos.map((todo, i) =>
         i === index ? { ...todo, favorite: newFavoriteStatus } : todo
       );
-      
       setTodos(updatedTodos);
     } catch (err) {
       console.error("Failed to update favorite status:", err);
@@ -215,9 +222,8 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Cards */}
+        {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Role Card */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Your Role</CardTitle>
@@ -229,7 +235,6 @@ function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Joined Details Card */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Joined</CardTitle>
@@ -248,7 +253,7 @@ function Dashboard() {
           </Card>
         </div>
 
-        {/* New Section: TODO + Chart */}
+        {/* Todo List & Chart */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
           {/* Todo List */}
           <Card>
@@ -256,7 +261,6 @@ function Dashboard() {
               <CardTitle className="text-lg font-semibold">Todo List</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Add Todo */}
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -265,7 +269,7 @@ function Dashboard() {
                   placeholder="Add new todo..."
                   className="flex-1 border rounded-md p-2 text-sm"
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       handleAddTodo();
                     }
                   }}
@@ -279,7 +283,6 @@ function Dashboard() {
                 </button>
               </div>
 
-              {/* Todo List */}
               {todoLoading && todos.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Loading todos...</p>
               ) : (
@@ -327,7 +330,7 @@ function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Leave Request Chart */}
+          {/* Leave Chart */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg font-semibold">
