@@ -170,7 +170,7 @@ export function CreateAccountForm({
                     />
                   </div>
                 </div>
-                <div className="grid md:grid-cols-2 md:gap-6">
+                <div className="">
                   <div className="grid gap-3">
                     <Label htmlFor="phoneNumber">Phone Number</Label>
                     <Input
@@ -181,23 +181,6 @@ export function CreateAccountForm({
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       required
                     />
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="role">Role</Label>
-                    <Select value={role} onValueChange={handleRoleChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a Role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Role</SelectLabel>
-                          <SelectItem value="HR">HR</SelectItem>
-                          <SelectItem value="Employee">Employee</SelectItem>
-                          <SelectItem value="Admin">Admin</SelectItem>
-                          <SelectItem value="Conditate">Conditate</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
               </div>
