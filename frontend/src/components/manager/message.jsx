@@ -109,7 +109,7 @@ export default function Message() {
   };
 
   return (
-    <div className="min-h-screen p-6 flex justify-center items-center">
+    <div className="min-h-screen p-6 flex justify-center items-center -mt-15">
       <Card className="w-full max-w-lg">
         <CardContent className="p-6">
           <h2 className="text-2xl font-semibold mb-4">Send a Message</h2>
