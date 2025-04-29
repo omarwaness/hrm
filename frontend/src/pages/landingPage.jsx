@@ -309,18 +309,18 @@ function LandingPage() {
             {[
               {
                 quote: "This platform has completely transformed how we manage our HR processes. The employee management and leave tracking features are exceptional.",
-                author: "Sarah Johnson",
-                title: "HR Director at TechCorp"
+                author: "Ahmed Khalil",
+                title: "Engineer and manager at JN"
               },
               {
                 quote: "The reporting capabilities have given us insights we never had before. Our decision-making process is now data-driven and much more effective.",
-                author: "Michael Chen",
-                title: "CEO at Innovate Inc."
+                author: "Youssef Zammit",
+                title: "Senior frontend developer at JN Inc."
               },
               {
                 quote: "The job recruitment module streamlined our hiring process. We're now able to fill positions faster with better candidates.",
-                author: "Emily Rodriguez",
-                title: "Recruitment Manager at Global Enterprises"
+                author: "Ayoub Lani",
+                title: "Backend connections expert at JN Enterprises"
               }
             ].map((testimonial, index) => (
               <motion.div

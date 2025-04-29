@@ -293,43 +293,7 @@ const Account = () => {
                         <form id="profile-form" onSubmit={handleSubmit} className="space-y-6">
                             <div className="flex flex-col lg:flex-row gap-8">
                                 {/* Profile Image Section */}
-                                <div className="flex flex-col items-center gap-4 lg:w-1/4 lg:items-start">
-                                    <Label>Profile Picture</Label>
-                                    <div className="h-32 w-32 rounded-full bg-muted overflow-hidden border-4 border-background shadow relative group">
-                                        {/* Debug information */}
-                                        {process.env.NODE_ENV === 'development' && console.log("Profile image path:", userData.profileImage)}
-                                        
-                                        <img
-                                            
-                                        />
-                                        {editMode && (
-                                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                                                 onClick={triggerFileInput}>
-                                                <Upload className="h-8 w-8 text-white" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    {editMode && (
-                                        <>
-                                            <input 
-                                                type="file" 
-                                                ref={fileInputRef}
-                                                className="hidden"
-                                                accept="image/jpeg,image/png,image/gif" 
-                                                onChange={handleFileChange}
-                                            />
-                                            <Button 
-                                                type="button" 
-                                                variant="outline" 
-                                                className="w-full"
-                                                disabled={uploadingAvatar}
-                                                onClick={triggerFileInput}
-                                            >
-                                                {uploadingAvatar ? 'Uploading...' : 'Change Photo'}
-                                            </Button>
-                                        </>
-                                    )}
-                                </div>
+                                
 
                                 {/* Form Fields Section */}
                                 <div className="flex-1 space-y-6">
@@ -528,6 +492,6 @@ const Account = () => {
             </div>
         </div>
     );
-}
+}   
 
 export default Account;

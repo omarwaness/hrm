@@ -42,7 +42,7 @@ export default function ApplyToJob() {
         cv: cvFile,
       });
 
-      setSuccessMessage("Application submitted successfully!");
+      setSuccessMessage("Application submitted successfully! An Email will be sent to you soon");
       setEmail("");
       setCvFile(null);
     } catch (error) {

@@ -117,12 +117,12 @@ export default function LeaveRequest() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={fromDate}
-                        onSelect={setFromDate}
-                        disabled={(date) => toDate && date > toDate}
-                        initialFocus
+                    <Calendar
+                      mode="single"
+                      selected={fromDate}
+                      onSelect={setFromDate}
+                      disabled={(date) => date <= new Date()}
+                      initialFocus
                       />
                     </PopoverContent>
                   </Popover>
@@ -148,7 +148,7 @@ export default function LeaveRequest() {
                         mode="single"
                         selected={toDate}
                         onSelect={setToDate}
-                        disabled={(date) => fromDate && date < fromDate}
+                        disabled={(date) => date <= fromDate}
                         initialFocus
                       />
                     </PopoverContent>
