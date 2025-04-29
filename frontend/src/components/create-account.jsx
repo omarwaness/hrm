@@ -86,7 +86,7 @@ export function CreateAccountForm({
         const res = await fetch("http://localhost:5000/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ firstName, lastName, phoneNumber, role: role || 'Conditate', email, password }),
+            body: JSON.stringify({ firstName, lastName, phoneNumber, role: 'Conditate', email, password }),
             credentials: "include",
         });
 
@@ -170,18 +170,18 @@ export function CreateAccountForm({
                     />
                   </div>
                 </div>
-                <div className="">
-                  <div className="grid gap-3">
-                    <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input
-                      id="phoneNumber"
-                      type="number"
-                      placeholder="Phone Number"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      required
-                    />
-                  </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    className="w-full"
+                    placeholder="Enter your phone number"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    required
+                  />
+
                 </div>
               </div>
 

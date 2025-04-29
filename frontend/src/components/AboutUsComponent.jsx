@@ -43,7 +43,7 @@ export default function AboutUsComponent() {
 
         <div className="mb-16 rounded-xl overflow-hidden shadow-xl">
         <img
-  src="https://videos.openai.com/vg-assets/assets%2Ftask_01jreehgqdewnt0nm5sk8y03as%2Fimg_0.webp?st=2025-04-09T21%3A59%3A02Z&se=2025-04-15T22%3A59%3A02Z&sks=b&skt=2025-04-09T21%3A59%3A02Z&ske=2025-04-15T22%3A59%3A02Z&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skoid=aa5ddad1-c91a-4f0a-9aca-e20682cc8969&skv=2019-02-02&sv=2018-11-09&sr=b&sp=r&spr=https%2Chttp&sig=S1K8FVDS5xlD%2BXYddDYnonH8lGl9s%2BcLzEvzOv7BHss%3D&az=oaivgprodscus"
+  src="/images/Team.png"
   alt="Our Team Collaboration"
   className="w-full h-64 md:h-96 object-contain"
 />
