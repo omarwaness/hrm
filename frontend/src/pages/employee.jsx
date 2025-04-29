@@ -12,6 +12,7 @@ import Footer from "@/components/Footer";
 import {useNavigate} from'react-router-dom';
 import {jwtDecode} from 'jwt-decode'
 import ChatWidget from "@/components/ChatWidget";
+import Message from "@/components/manager/message";
 
 // Importing the components for each section
 
@@ -25,11 +26,9 @@ export default function Employee() {
       if(user.role!=="Employee"){
         navigate('/error')
       }
-
     }else(
       navigate('/error')
     )
-    
   })
   // Function to render the active component
   const renderComponent = () => {
@@ -38,6 +37,8 @@ export default function Employee() {
         return <Dashboard/>;
       case "Inbox":
         return <Inbox/>;
+      case "Message":
+        return <Message/>;
       case "Contract":
         return <Contract />;
       case "LeaveRequest":

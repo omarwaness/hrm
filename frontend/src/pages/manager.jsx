@@ -50,7 +50,7 @@ export default function Manager() {
         return <Account/>;
       case "Inbox":
         return <Inbox/>;
-        case "Message":
+      case "Message":
         return <Message/>;
       case "ViewEmpolyees":
         return <EmployeeList/>;

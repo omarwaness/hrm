@@ -154,7 +154,7 @@ export default function ManageApplications() {
                     </div>
                     <div className="mt-1">
                       <a
-                        href={`/uploads/cv/${app.cv}`}
+                        href={`http://localhost:5000/uploads/cvs/${app.cv}`}  // Replace with your backend URL
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline text-sm"
@@ -167,7 +167,7 @@ export default function ManageApplications() {
                   <div className="flex space-x-2 mt-4 sm:mt-0">
                     <Button 
                       variant="outline" 
-                      className="border-green-500 text-green-600 hover:bg-green-50" 
+                      className="border-green-500 text-green-600 hover:bg-secondary" 
                       onClick={() => handleAccept(app)}
                     >
                       Accept

@@ -60,14 +60,20 @@ function UpdateEmployee() {
       setIsSearching(false);
     } else {
       setIsSearching(true);
-      const filteredEmployees = employees.filter(emp => 
-        emp.firstName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        emp.lastName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        emp.email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const filteredEmployees = employees.filter(emp => {
+        const firstName = emp.firstName || '';
+        const lastName = emp.lastName || '';
+        const email = emp.email || '';
+        return (
+          firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          email.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      });
       setSearchResults(filteredEmployees);
     }
   }, [searchQuery, employees]);
+  
 
   // The form submission is now just a fallback
   const handleSearch = (e) => {

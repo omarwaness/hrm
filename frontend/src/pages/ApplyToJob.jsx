@@ -53,11 +53,11 @@ export default function ApplyToJob() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+    <div className="max-w-md mx-auto mt-45 p-6 bg-white shadow-md rounded-lg ">
       <h2 className="text-2xl font-bold mb-6 text-center">Apply for this Job</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
           <Input
             id="email"
@@ -69,7 +69,7 @@ export default function ApplyToJob() {
           />
         </div>
 
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="cv">Upload your CV (PDF)</Label>
           <Input
             id="cv"
