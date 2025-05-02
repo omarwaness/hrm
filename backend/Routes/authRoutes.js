@@ -9,46 +9,72 @@ const jwt=require("jsonwebtoken");
 const User=require("../models/Users");
 const passport = require('passport')
 const router=express.Router();
+const { OAuth2Client } = require("google-auth-library");
+
 
  
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-router.get('/google/callback', (req, res, next) => {
-  passport.authenticate('google', (err, user, info) => {
-    if (err || !user) {
-      return res.redirect('/error');
+async function verifyGoogleToken(token) {
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,  // Ensure this matches your Google Client ID
+    });
+
+    const payload = ticket.getPayload();
+    return payload;  // Return the payload for further use
+  } catch (error) {
+    console.error("Google token verification failed:", error);
+    throw new Error("Invalid Google token");
+  }
+}
+
+// Google Auth route
+router.post("/google", async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const payload = await verifyGoogleToken(token);  // Verify the Google token
+    const { sub: googleId, email, name, picture  ,given_name,family_name } = payload;
+
+    let user = await User.findOne({ googleId });
+
+    if (!user) {
+      user = await User.create({
+        googleId,
+        email,
+        name,
+        picture,
+        firstName: given_name,
+        lastName: family_name,
+        role: "Conditate", // Default role if you want
+      });
     }
 
-    try {
-      const token = user.token;
+    // Generate a JWT token with user role
+    const jwtToken = jwt.sign(
+      {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role, // Include the role in the payload
+        email: user.email,
+        name: user.name,
+        picture: user.picture
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
 
-      res.send(`
-        <!DOCTYPE html>
-        <html lang="en">
-          <head>
-            <meta charset="UTF-8" />
-            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>Redirecting...</title>
-            <script type="text/javascript">
-              (function() {
-                window.localStorage.setItem("token", ${JSON.stringify(token)});
-                window.location.href = "http://localhost:3000/jobs";
-              })();
-            </script>
-          </head>
-          <body>
-            <noscript>JavaScript is required to continue. Please enable it.</noscript>
-            <p>Redirecting... Please wait.</p>
-          </body>
-        </html>
-      `);
-    } catch (error) {
-      console.error('Error during token setting:', error);
-      res.redirect('/error');
-    }
-  })(req, res, next);
+    // Send the JWT token with the user's role
+    res.json({ token: jwtToken, user });
+  } catch (err) {
+    res.status(401).json({ message: "Invalid Google token", error: err.message });
+  }
 });
+
+
 
 
 

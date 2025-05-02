@@ -44,9 +44,7 @@ app.use(session({
 }));
 
 // Passport configuration
-require('./config/passport')(passport);
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 // Routes
 app.use("/api/auth", require("./Routes/authRoutes"));
